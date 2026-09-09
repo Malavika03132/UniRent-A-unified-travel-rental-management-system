@@ -116,11 +116,9 @@ def seed_database():
             bathrooms=3,
             amenities=json.dumps(["Nadumuttom Courtyard", "Riverfront Lawn", "Traditional Kerala Kitchen", "Free High-Speed Wi-Fi", "Air Conditioning", "Lotus Pond", "Ayurvedic Spa Facility", "Covered Parking"]),
             images=json.dumps([
-                "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
-                "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
-                "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80"
+                "/static/images/tharavadu.jpg"
             ]),
-            featured_image="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80",
+            featured_image="/static/images/tharavadu.jpg",
             approval_status="approved",
             availability_status="available",
             featured=True
@@ -142,10 +140,9 @@ def seed_database():
             bathrooms=2,
             amenities=json.dumps(["Private Plunge Pool", "Terracotta Verandah", "Wi-Fi", "Air Conditioning", "Artisan Coffee Bar", "Heritage Walking Tour"]),
             images=json.dumps([
-                "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
-                "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80"
+                "/static/images/dutch_manor.jpg"
             ]),
-            featured_image="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+            featured_image="/static/images/dutch_manor.jpg",
             approval_status="approved",
             availability_status="available",
             featured=True
@@ -167,9 +164,9 @@ def seed_database():
             bathrooms=2,
             amenities=json.dumps(["Backwater Access", "Beach Walk 200m", "Hammocks & Coconut Grove", "Wi-Fi", "Homecooked Karimeen Pollichathu", "Free Parking"]),
             images=json.dumps([
-                "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80"
+                "/static/images/cherai_lagoon.jpg"
             ]),
-            featured_image="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80",
+            featured_image="/static/images/cherai_lagoon.jpg",
             approval_status="approved",
             availability_status="available",
             featured=False
@@ -191,9 +188,9 @@ def seed_database():
             bathrooms=3,
             amenities=json.dumps(["Temple Heritage Architecture", "Herbal Garden", "Traditional Brass Lamps", "Wi-Fi", "Air Conditioning", "Vegetarian Kerala Kitchen"]),
             images=json.dumps([
-                "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80"
+                "/static/images/Illam.jpg"
             ]),
-            featured_image="https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80",
+            featured_image="/static/images/Illam.jpg",
             approval_status="approved",
             availability_status="available",
             featured=True
@@ -215,9 +212,9 @@ def seed_database():
             bathrooms=3,
             amenities=json.dumps(["Riverfront Deck", "Canoe Boat Ride", "Nadumuttom", "High-Speed Wi-Fi", "Yoga Pavilion", "Lush Lawn"]),
             images=json.dumps([
-                "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=1200&q=80"
+                "/static/images/puzhakkal_nalukettu.jpg"
             ]),
-            featured_image="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=1200&q=80",
+            featured_image="/static/images/puzhakkal_nalukettu.jpg",
             approval_status="approved",
             availability_status="available",
             featured=False
@@ -240,9 +237,9 @@ def seed_database():
             bathrooms=2,
             amenities=json.dumps(["Waterfall Sound Views", "Solar Powered", "Forest Balcony", "Wi-Fi"]),
             images=json.dumps([
-                "https://images.unsplash.com/photo-1587061949409-02df41d5e562?auto=format&fit=crop&w=1200&q=80"
+                "/static/images/athirappilly_retreat.jpg"
             ]),
-            featured_image="https://images.unsplash.com/photo-1587061949409-02df41d5e562?auto=format&fit=crop&w=1200&q=80",
+            featured_image="/static/images/athirappilly_retreat.jpg",
             approval_status="pending",  # PENDING APPROVAL
             availability_status="available",
             featured=False

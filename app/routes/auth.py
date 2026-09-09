@@ -62,7 +62,7 @@ def login(role_type=None):
         
         email = data.get('email', '').strip().lower()
         password = data.get('password', '')
-        selected_role = data.get('role', active_role).strip().lower()
+        selected_role = (data.get('role') or role_type or '').strip().lower()
         
         if not email or not password:
             error_msg = 'Please provide both email and password.'
