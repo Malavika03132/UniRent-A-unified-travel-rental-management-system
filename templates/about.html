@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}About UniRent — Preserving Kerala's Heritage Architecture & Mobility{% endblock %}
+
+{% block content %}
+
+<!-- About Hero -->
+<div style="background-color: var(--ur-brown); color: var(--ur-ivory); padding: 5rem 0 4rem; text-align: center;">
+  <div class="container" style="max-width: 800px;">
+    <span style="color: #ffaa85; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;">Our Heritage Mission</span>
+    <h1 style="color: var(--ur-white); font-size: 3rem; margin: 0.6rem 0 1.2rem;">Preserving Kerala’s Architectural Soul</h1>
+    <p style="color: #d8cec1; font-size: 1.15rem; line-height: 1.7;">
+      UniRent was founded with a singular purpose: to safeguard Kerala’s magnificent Tharavadu estates, Nalukettu courtyards, and colonial manors through sustainable, regenerative heritage tourism and seamless local mobility.
+    </p>
+  </div>
+</div>
+
+<div class="container" style="padding: 5rem 0;">
+  
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; margin-bottom: 5rem;">
+    <div>
+      <span class="badge badge-delivery" style="margin-bottom: 0.8rem;">The Conservation Challenge</span>
+      <h2 style="font-size: 2.2rem; margin-bottom: 1.2rem;">From Forgotten Mansions to Living Sanctuaries</h2>
+      <p style="font-size: 1.05rem; line-height: 1.7; color: var(--ur-text); margin-bottom: 1.2rem;">
+        Across Ernakulam and Thrissur, ancestral wooden houses that withstood centuries of tropical monsoons were gradually falling into disrepair or facing demolition due to high maintenance costs.
+      </p>
+      <p style="font-size: 1.05rem; line-height: 1.7; color: var(--ur-text);">
+        UniRent creates a dignified economic bridge: connecting passionate travelers who respect architectural history with property owners committed to heritage preservation. Every stay booked directly funds the conservation of hand-carved woodwork, clay tile roofs, and ancient rainwater courtyards.
+      </p>
+    </div>
+    <div style="border-radius: var(--radius-md); overflow: hidden; height: 420px; box-shadow: var(--shadow-lg); border: 1px solid var(--ur-border);">
+      <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80" alt="Kerala Traditional Architecture" style="width:100%; height:100%; object-fit:cover;">
+    </div>
+  </div>
+
+  <!-- Operational Focus: Ernakulam & Thrissur -->
+  <div style="background-color: var(--ur-ivory); border-radius: var(--radius-md); border: 1px solid var(--ur-border); padding: 3.5rem; margin-bottom: 5rem;">
+    <div style="text-align: center; max-width: 650px; margin: 0 auto 3rem;">
+      <span class="badge badge-pickup" style="margin-bottom: 0.5rem;">Phase 1 Focus</span>
+      <h2>Why Ernakulam and Thrissur?</h2>
+      <p style="color: var(--ur-muted); margin-top: 0.5rem;">Two contrasting yet deeply complementary cultural epicenters of Central Kerala.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;">
+      <div style="background: var(--ur-white); padding: 2rem; border-radius: var(--radius-sm); border: 1px solid var(--ur-border);">
+        <h3 style="margin-bottom: 0.6rem;">🌊 Ernakulam District</h3>
+        <p style="color: var(--ur-text); font-size: 0.95rem; line-height: 1.6;">
+          From the ancient Portuguese and Dutch spice mansions in Fort Kochi and Mattancherry to the riverside agrarian Tharavadus of Aluva and the serene backwater coastal hamlets of Cherai, Ernakulam represents maritime commerce and layered intercultural heritage.
+        </p>
+      </div>
+
+      <div style="background: var(--ur-white); padding: 2rem; border-radius: var(--radius-sm); border: 1px solid var(--ur-border);">
+        <h3 style="margin-bottom: 0.6rem;">🛕 Thrissur District</h3>
+        <p style="color: var(--ur-text); font-size: 0.95rem; line-height: 1.6;">
+          The undisputed cultural capital of Kerala. Home to sacred Brahmin Illams, classical temple art schools, the monumental Vadakkumnathan amphitheater, emerald paddy fields of Puzhakkal, and the misty rainforest passes of Athirappilly and Chalakudy.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Integrated Mobility -->
+  <div style="text-align: center; max-width: 720px; margin: 0 auto;">
+    <h2>Heritage Mobility Redefined</h2>
+    <p style="color: var(--ur-muted); font-size: 1.05rem; line-height: 1.7; margin: 1rem 0 2rem;">
+      Traditional Kerala estates are often nestled along quiet rural lanes, coconut groves, and riverside paths where typical tourist buses cannot venture. By pairing authentic stays with rugged 4x4s, touring motorcycles, and agile scooters, UniRent empowers travelers to explore freely on their own terms.
+    </p>
+    <a href="{{ url_for('main.vehicles') }}" class="btn btn-primary">Discover Companion Vehicles</a>
+  </div>
+
+</div>
+
+{% endblock %}

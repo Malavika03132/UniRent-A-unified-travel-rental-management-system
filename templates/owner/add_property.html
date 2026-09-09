@@ -1,0 +1,120 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Add Heritage Property — Owner Portal{% endblock %}
+{% block page_title %}List a Heritage Property{% endblock %}
+
+{% block dashboard_content %}
+
+<div style="max-width: 880px; margin: 0 auto;">
+  
+  <div style="background: var(--ur-ivory); border: 1px solid var(--ur-burnt-orange); border-radius: var(--radius-sm); padding: 1.2rem 1.5rem; margin-bottom: 2rem; display: flex; gap: 1rem; align-items: center;">
+    <div style="font-size: 1.8rem;">🛡️</div>
+    <div style="font-size: 0.9rem; color: var(--ur-brown);">
+      <strong>Admin Approval Notice:</strong> In order to maintain UniRent's strict architectural authenticity and guest safety standards, newly submitted listings are placed in <strong>Pending Approval</strong> status and verified by our curation team before appearing publicly.
+    </div>
+  </div>
+
+  <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 2.5rem; box-shadow: var(--shadow-sm);">
+    
+    <form action="{{ url_for('owner.add_property') }}" method="POST">
+      
+      <h4 style="margin-bottom: 1.2rem; border-bottom: 1px solid var(--ur-border); padding-bottom: 0.5rem;">Basic Architecture & Details</h4>
+
+      <div class="form-group">
+        <label for="p_name">Heritage Property Name</label>
+        <input type="text" id="p_name" name="property_name" class="form-control" placeholder="e.g. Malarvadi Heritage Tharavadu" required>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem;">
+        <div class="form-group">
+          <label for="p_type">Property Architectural Category</label>
+          <select id="p_type" name="property_type" class="form-control" required>
+            <option value="Traditional Kerala House">Traditional Kerala House (Tharavadu)</option>
+            <option value="Heritage Villa">Heritage Villa & Colonial Manor</option>
+            <option value="Heritage Stay">Coastal / Riverfront Heritage Stay</option>
+            <option value="Nalukettu Residence">Authentic Nalukettu Residence</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="p_district">Kerala District</label>
+          <select id="p_district" name="district" class="form-control" required>
+            <option value="Ernakulam">Ernakulam (Kochi / Aluva / Cherai)</option>
+            <option value="Thrissur">Thrissur (Cultural Capital / Chalakudy)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="p_address">Full Street Address</label>
+        <input type="text" id="p_address" name="address" class="form-control" placeholder="e.g. River Road, Desom, Aluva, Ernakulam" required>
+      </div>
+
+      <div class="form-group">
+        <label for="p_desc">Detailed Heritage Description</label>
+        <textarea id="p_desc" name="description" rows="5" class="form-control" placeholder="Describe the history, woodwork, courtyards, natural surroundings, and guest experience..." required></textarea>
+      </div>
+
+      <h4 style="margin: 2rem 0 1.2rem; border-bottom: 1px solid var(--ur-border); padding-bottom: 0.5rem;">Capacity & Pricing</h4>
+
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+        <div class="form-group">
+          <label for="p_price">Price / Night (₹)</label>
+          <input type="number" id="p_price" name="price_per_night" class="form-control" value="5500" required>
+        </div>
+        <div class="form-group">
+          <label for="p_guests">Guest Capacity</label>
+          <input type="number" id="p_guests" name="guest_capacity" class="form-control" value="6" required>
+        </div>
+        <div class="form-group">
+          <label for="p_bedrooms">Bedrooms</label>
+          <input type="number" id="p_bedrooms" name="bedrooms" class="form-control" value="3" required>
+        </div>
+        <div class="form-group">
+          <label for="p_bathrooms">Bathrooms</label>
+          <input type="number" id="p_bathrooms" name="bathrooms" class="form-control" value="3" required>
+        </div>
+      </div>
+
+      <h4 style="margin: 2rem 0 1.2rem; border-bottom: 1px solid var(--ur-border); padding-bottom: 0.5rem;">Amenities & Features</h4>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin-bottom: 1.5rem;">
+        <label><input type="checkbox" name="amenities" value="Nadumuttom Courtyard" checked> Nadumuttom Courtyard</label>
+        <label><input type="checkbox" name="amenities" value="Traditional Kitchen" checked> Traditional Kitchen</label>
+        <label><input type="checkbox" name="amenities" value="Riverfront / Water View" checked> Riverfront / Water View</label>
+        <label><input type="checkbox" name="amenities" value="Air Conditioning" checked> Air Conditioning</label>
+        <label><input type="checkbox" name="amenities" value="Free High-Speed Wi-Fi" checked> Free High-Speed Wi-Fi</label>
+        <label><input type="checkbox" name="amenities" value="Ayurvedic Spa Facility"> Ayurvedic Spa Facility</label>
+        <label><input type="checkbox" name="amenities" value="Private Plunge Pool"> Private Plunge Pool</label>
+        <label><input type="checkbox" name="amenities" value="Lush Heritage Garden"> Lush Heritage Garden</label>
+        <label><input type="checkbox" name="amenities" value="Free Covered Parking" checked> Free Covered Parking</label>
+      </div>
+
+      <h4 style="margin: 2rem 0 1.2rem; border-bottom: 1px solid var(--ur-border); padding-bottom: 0.5rem;">Imagery & Location Coordinates</h4>
+
+      <div class="form-group">
+        <label for="p_img">Primary Photography Image URL</label>
+        <input type="url" id="p_img" name="image_url" class="form-control" placeholder="https://images.unsplash.com/photo-..." value="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80">
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label for="p_lat">Latitude</label>
+          <input type="text" id="p_lat" name="latitude" class="form-control" value="10.1076">
+        </div>
+        <div class="form-group">
+          <label for="p_lng">Longitude</label>
+          <input type="text" id="p_lng" name="longitude" class="form-control" value="76.3516">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 1.5rem;">
+        Submit Property for Verification
+      </button>
+
+    </form>
+
+  </div>
+</div>
+
+{% endblock %}

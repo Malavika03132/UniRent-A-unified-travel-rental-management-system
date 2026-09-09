@@ -1,0 +1,68 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Host Profile — Owner Portal{% endblock %}
+{% block page_title %}Host Business Profile{% endblock %}
+
+{% block dashboard_content %}
+
+<div style="max-width: 750px; margin: 0 auto;">
+  <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 2.5rem; box-shadow: var(--shadow-sm);">
+    
+    <div style="display: flex; gap: 1.5rem; align-items: center; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--ur-border-light);">
+      <div class="user-avatar-circle" style="width: 70px; height: 70px; font-size: 1.8rem;">
+        {{ user.full_name[:1] }}
+      </div>
+      <div>
+        <h3 style="font-size: 1.4rem; margin: 0 0 0.2rem;">{{ owner.business_name or user.full_name }}</h3>
+        <div style="font-size: 0.88rem; color: var(--ur-muted);">
+          Verified Kerala Host • Operating in {{ owner.district }}
+        </div>
+        <span class="badge badge-approved" style="margin-top: 0.5rem;">KYC Status: {{ owner.kyc_status|capitalize }}</span>
+      </div>
+    </div>
+
+    <form action="{{ url_for('owner.profile') }}" method="POST">
+      <div class="form-group">
+        <label for="owner_biz_name">Business / Estate Brand Name</label>
+        <input type="text" id="owner_biz_name" name="business_name" class="form-control" value="{{ owner.business_name or '' }}" required>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label for="owner_full_name">Legal Host Name</label>
+          <input type="text" id="owner_full_name" name="full_name" class="form-control" value="{{ user.full_name }}" required>
+        </div>
+        <div class="form-group">
+          <label for="owner_phone">Phone Number</label>
+          <input type="tel" id="owner_phone" name="phone" class="form-control" value="{{ user.phone }}" required>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label for="owner_district_select">Operational District</label>
+          <select id="owner_district_select" name="district" class="form-control">
+            <option value="Ernakulam" {% if owner.district == 'Ernakulam' %}selected{% endif %}>Ernakulam</option>
+            <option value="Thrissur" {% if owner.district == 'Thrissur' %}selected{% endif %}>Thrissur</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="owner_bank">Payout Bank Account</label>
+          <input type="text" id="owner_bank" name="bank_account" class="form-control" value="{{ owner.bank_account or '' }}" placeholder="IFSC Code - Account Number">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="owner_bio">Host Story & Background</label>
+        <textarea id="owner_bio" name="bio" rows="4" class="form-control" placeholder="Share your experience preserving heritage architecture or maintaining vehicles in Kerala...">{{ owner.bio or '' }}</textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 1rem;">
+        Save Host Profile
+      </button>
+    </form>
+
+  </div>
+</div>
+
+{% endblock %}

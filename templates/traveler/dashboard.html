@@ -1,0 +1,172 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Traveler Dashboard — UniRent Kerala{% endblock %}
+{% block page_title %}Traveler Sanctuary{% endblock %}
+
+{% block dashboard_content %}
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-label">Upcoming Bookings</span>
+    <span class="stat-value">{{ stats.upcoming }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Active Trips</span>
+    <span class="stat-value" style="color: var(--ur-burnt-orange);">{{ stats.active }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Completed Stays</span>
+    <span class="stat-value">{{ stats.completed }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Total Expended</span>
+    <span class="stat-value">{{ format_currency(stats.total_spent) }}</span>
+  </div>
+</div>
+
+<!-- Next Upcoming Booking Spotlight -->
+{% if next_upcoming %}
+  <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 2rem; margin-bottom: 2.5rem; box-shadow: var(--shadow-sm);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.2rem;">
+      <span class="badge badge-confirmed">Upcoming Sanctuary</span>
+      <span style="font-size: 0.85rem; color: var(--ur-muted);">Ref: {{ next_upcoming.booking_reference }}</span>
+    </div>
+
+    <div style="display: flex; gap: 2rem; align-items: center;">
+      <div style="width: 140px; height: 110px; border-radius: var(--radius-sm); overflow: hidden; flex-shrink: 0;">
+        <img src="{{ next_upcoming.listing_image }}" alt="Upcoming" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+
+      <div style="flex: 1;">
+        <span class="badge badge-delivery" style="margin-bottom: 0.3rem;">{{ next_upcoming.listing_type|capitalize }}</span>
+        <h3 style="font-size: 1.4rem; margin: 0.2rem 0 0.4rem;">{{ next_upcoming.listing_name }}</h3>
+        <p style="color: var(--ur-muted); font-size: 0.92rem; margin-bottom: 0.5rem;">
+          📅 {{ next_upcoming.start_date.strftime('%B %d, %Y') }} → {{ next_upcoming.end_date.strftime('%B %d, %Y') }} ({{ next_upcoming.total_days }} days)
+        </p>
+        <div style="font-size: 0.95rem; font-weight: 700; color: var(--ur-burnt-orange);">
+          {{ format_currency(next_upcoming.total_amount) }} Paid
+        </div>
+      </div>
+
+      <div>
+        <a href="{{ url_for('main.confirmation', ref=next_upcoming.booking_reference) }}" class="btn btn-secondary btn-sm">View Receipt</a>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+<!-- Recent Bookings Table -->
+<div style="margin-bottom: 3rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+    <h3 style="font-size: 1.25rem; margin:0;">Recent Bookings</h3>
+    <a href="{{ url_for('traveler.bookings') }}" class="btn btn-outline btn-sm">All Bookings →</a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Reference</th>
+          <th>Listing</th>
+          <th>Dates</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in recent_bookings %}
+          <tr>
+            <td><strong>{{ b.booking_reference }}</strong></td>
+            <td>
+              <div style="font-weight: 600;">{{ b.listing_name }}</div>
+              <div style="font-size: 0.78rem; color: var(--ur-muted);">{{ b.listing_type|capitalize }}</div>
+            </td>
+            <td>{{ b.start_date.strftime('%b %d') }} - {{ b.end_date.strftime('%b %d, %Y') }}</td>
+            <td><strong>{{ format_currency(b.total_amount) }}</strong></td>
+            <td>
+              {% if b.booking_status == 'confirmed' %}
+                <span class="badge badge-confirmed">Confirmed</span>
+              {% elif b.booking_status == 'active' %}
+                <span class="badge badge-active">Active</span>
+              {% elif b.booking_status == 'completed' %}
+                <span class="badge badge-approved">Completed</span>
+              {% else %}
+                <span class="badge badge-rejected">{{ b.booking_status|capitalize }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{{ url_for('main.confirmation', ref=b.booking_reference) }}" class="btn btn-outline btn-sm">Receipt</a>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="6" style="text-align:center; padding: 2rem; color: var(--ur-muted);">No bookings placed yet. <a href="{{ url_for('main.stays') }}">Explore Heritage Stays</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Recommendations & Status Split -->
+<div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem;">
+  
+  <!-- Recommended Stays & Vehicles -->
+  <div>
+    <h3 style="font-size: 1.25rem; margin-bottom: 1.2rem;">Recommended Kerala Heritage Stays</h3>
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+      {% for stay in recommended_stays %}
+        <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-sm); padding: 1rem; display: flex; gap: 1rem; align-items: center;">
+          <div style="width: 80px; height: 65px; border-radius: 6px; overflow: hidden; flex-shrink: 0;">
+            <img src="{{ stay.featured_image }}" alt="Stay" style="width:100%; height:100%; object-fit:cover;">
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:0.75rem; color: var(--ur-burnt-orange); font-weight:700;">{{ stay.property_type }}</div>
+            <h4 style="font-size: 0.98rem; margin:0 0 0.2rem;"><a href="{{ url_for('main.stay_details', property_id=stay.property_id) }}">{{ stay.property_name }}</a></h4>
+            <div style="font-size: 0.8rem; color: var(--ur-muted);">📍 {{ stay.district }} • ★ {{ stay.average_rating }}</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-weight: 700; color: var(--ur-brown);">{{ format_currency(stay.price_per_night) }}</div>
+            <a href="{{ url_for('main.stay_details', property_id=stay.property_id) }}" class="btn btn-outline btn-sm" style="margin-top: 0.3rem;">View</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Complaints & Reviews Status -->
+  <div>
+    <h3 style="font-size: 1.25rem; margin-bottom: 1.2rem;">Support & Complaint Status</h3>
+    <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-sm); padding: 1.5rem;">
+      {% if recent_complaints %}
+        {% for c in recent_complaints %}
+          <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--ur-border-light);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.3rem;">
+              <strong style="font-size: 0.88rem;">{{ c.complaint_reference }}</strong>
+              <span class="badge {% if c.status == 'resolved' %}badge-approved{% elif c.status == 'owner_responded' %}badge-active{% else %}badge-pending{% endif %}">
+                {{ c.status|replace('_', ' ')|capitalize }}
+              </span>
+            </div>
+            <div style="font-size: 0.85rem; color: var(--ur-muted);">Category: {{ c.category }}</div>
+            {% if c.owner_response %}
+              <div style="background: var(--ur-ivory); padding: 0.5rem; border-radius: 4px; font-size: 0.8rem; margin-top: 0.4rem;">
+                <strong>Host response:</strong> {{ c.owner_response[:90] }}...
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+        <a href="{{ url_for('traveler.complaints') }}" style="font-size: 0.85rem; color: var(--ur-burnt-orange); font-weight:600;">Track All Complaints →</a>
+      {% else %}
+        <div style="text-align: center; color: var(--ur-muted); padding: 1rem 0;">
+          <div>🛡️</div>
+          <div style="margin-top: 0.5rem; font-size: 0.9rem;">No complaints on record. All your journeys are running smoothly.</div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

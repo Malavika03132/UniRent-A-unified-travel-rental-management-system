@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}{{ property.property_name }} — UniRent Kerala Heritage Stays{% endblock %}
+
+{% block content %}
+
+<div class="container" style="padding-top: 2rem;">
+  
+  <!-- Breadcrumb -->
+  <div style="font-size: 0.88rem; color: var(--ur-muted); margin-bottom: 1rem;">
+    <a href="{{ url_for('main.index') }}">Home</a> &gt; 
+    <a href="{{ url_for('main.stays') }}">Heritage Stays</a> &gt; 
+    <a href="{{ url_for('main.stays', district=property.district) }}">{{ property.district }}</a> &gt; 
+    <span>{{ property.property_name }}</span>
+  </div>
+
+  <!-- Property Header Title -->
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+    <div>
+      <span class="badge badge-delivery" style="margin-bottom: 0.5rem;">{{ property.property_type }}</span>
+      <h1 style="font-size: 2.4rem; margin: 0.2rem 0 0.5rem;">{{ property.property_name }}</h1>
+      <div style="display: flex; align-items: center; gap: 1.2rem; font-size: 0.95rem; color: var(--ur-text);">
+        <span>📍 {{ property.address }}, {{ property.district }}, Kerala</span>
+        <span>★ <strong>{{ property.average_rating }}</strong> ({{ property.reviews_count }} verified reviews)</span>
+      </div>
+    </div>
+
+    <div style="text-align: right;">
+      <span class="badge badge-approved">UniRent Curated</span>
+    </div>
+  </div>
+
+  <!-- Image Gallery Grid -->
+  <div class="details-hero-grid">
+    {% for img_url in property.images_list %}
+      <img src="{{ img_url }}" alt="{{ property.property_name }}" loading="lazy">
+    {% endfor %}
+    {% if property.images_list|length < 3 %}
+      <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80" alt="Heritage Interior">
+      <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80" alt="Heritage Courtyard">
+    {% endif %}
+  </div>
+
+  <!-- Main Details & Booking Sidebar Layout -->
+  <div class="details-layout">
+    
+    <!-- Left Column: Details & Map -->
+    <div>
+      <!-- Key Features Quick Bar -->
+      <div style="display: flex; gap: 2rem; padding: 1.2rem 1.5rem; background: var(--ur-ivory); border-radius: var(--radius-sm); border: 1px solid var(--ur-border); margin-bottom: 2.5rem;">
+        <div>👥 <strong>{{ property.guest_capacity }}</strong> Maximum Guests</div>
+        <div>🛏️ <strong>{{ property.bedrooms }}</strong> Heritage Bedrooms</div>
+        <div>🚿 <strong>{{ property.bathrooms }}</strong> Private Bathrooms</div>
+        <div>📍 <strong>{{ property.district }}</strong> Operational Zone</div>
+      </div>
+
+      <!-- Description Section -->
+      <section style="margin-bottom: 3rem;">
+        <h3 style="margin-bottom: 1rem;">The Heritage Sanctuary</h3>
+        <p style="font-size: 1.05rem; line-height: 1.7; color: var(--ur-text);">
+          {{ property.description }}
+        </p>
+      </section>
+
+      <!-- Amenities Section -->
+      <section style="margin-bottom: 3rem;">
+        <h3 style="margin-bottom: 1rem;">Traditional & Modern Amenities</h3>
+        <div class="amenity-grid">
+          {% for am in property.amenities_list %}
+            <div class="amenity-item">
+              <span>🌿</span>
+              <span>{{ am }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <!-- Host Profile Section -->
+      <section style="margin-bottom: 3rem; background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.8rem;">
+        <div style="display: flex; align-items: center; gap: 1.2rem; margin-bottom: 1rem;">
+          <div class="user-avatar-circle" style="width: 54px; height: 54px; font-size: 1.3rem;">
+            {{ property.owner.user.full_name[:1] if property.owner and property.owner.user else 'H' }}
+          </div>
+          <div>
+            <h4 style="margin:0;">Hosted by {{ property.owner.user.full_name if property.owner and property.owner.user else 'UniRent Host' }}</h4>
+            <div style="font-size: 0.85rem; color: var(--ur-muted);">
+              Verified Heritage Curator • {{ property.owner.district if property.owner else 'Kerala' }}
+            </div>
+          </div>
+        </div>
+        <p style="font-size: 0.92rem; color: var(--ur-muted); margin: 0;">
+          {{ property.owner.bio if property.owner and property.owner.bio else 'Passionate Kerala heritage preservationist maintaining authentic traditional architecture and providing authentic guest hospitality.' }}
+        </p>
+      </section>
+
+      <!-- Location Leaflet Map Section -->
+      <section style="margin-bottom: 3rem;">
+        <h3 style="margin-bottom: 0.5rem;">Sanctuary Location</h3>
+        <p style="font-size: 0.92rem; color: var(--ur-muted); margin-bottom: 1.2rem;">
+          {{ property.address }}, {{ property.district }}, Kerala
+        </p>
+        <div class="map-container"
+             data-leaflet-lat="{{ property.latitude }}"
+             data-leaflet-lng="{{ property.longitude }}"
+             data-leaflet-title="{{ property.property_name }}"
+             data-leaflet-zoom="15">
+        </div>
+      </section>
+
+      <!-- Reviews Section -->
+      <section style="margin-bottom: 3rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <h3>Guest Reviews & Ratings</h3>
+          <span style="font-size: 1.1rem; font-weight: 700; color: var(--ur-burnt-orange);">★ {{ property.average_rating }} / 5.0</span>
+        </div>
+
+        {% if reviews %}
+          <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+            {% for r in reviews %}
+              <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-sm); padding: 1.4rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
+                  <strong>{{ r.author_name }}</strong>
+                  <span style="color: #f59e0b;">{% for i in range(r.rating) %}★{% endfor %}</span>
+                </div>
+                <h5 style="font-size: 0.98rem; margin-bottom: 0.35rem;">{{ r.review_title }}</h5>
+                <p style="font-size: 0.92rem; color: var(--ur-text); margin: 0;">{{ r.review_text }}</p>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p style="color: var(--ur-muted);">No reviews posted yet for this heritage listing.</p>
+        {% endif %}
+      </section>
+
+    </div>
+
+    <!-- Right Column: Booking Widget -->
+    <aside>
+      <div class="booking-sidebar-widget">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.2rem;">
+          <div>
+            <span style="font-size: 1.8rem; font-weight: 700; color: var(--ur-burnt-orange);">{{ format_currency(property.price_per_night) }}</span>
+            <span style="font-size: 0.85rem; color: var(--ur-muted);">/ night</span>
+          </div>
+          <div style="font-size: 0.85rem; font-weight: 600; color: var(--ur-brown);">
+            ★ {{ property.average_rating }}
+          </div>
+        </div>
+
+        <form action="{{ url_for('main.booking') }}" method="GET">
+          <input type="hidden" name="type" value="property">
+          <input type="hidden" name="id" value="{{ property.property_id }}">
+
+          <div class="form-group">
+            <label for="checkin_date">Check-in Date</label>
+            <input type="date" id="checkin_date" name="start" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label for="checkout_date">Check-out Date</label>
+            <input type="date" id="checkout_date" name="end" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label for="guest_count">Guests</label>
+            <select id="guest_count" name="guests" class="form-control">
+              {% for i in range(1, property.guest_capacity + 1) %}
+                <option value="{{ i }}">{{ i }} Guest{% if i > 1 %}s{% endif %}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="pricing-breakdown">
+            <div class="price-row">
+              <span>Heritage Stay Rate</span>
+              <span>{{ format_currency(property.price_per_night) }}</span>
+            </div>
+            <div class="price-row">
+              <span>Platform Concierge Fee (5%)</span>
+              <span>{{ format_currency(property.price_per_night * 0.05) }}</span>
+            </div>
+            <div class="price-row">
+              <span>Kerala Heritage Tourism Tax (12%)</span>
+              <span>{{ format_currency(property.price_per_night * 0.12) }}</span>
+            </div>
+            <div class="price-row total">
+              <span>Estimated (1 Night)</span>
+              <span>{{ format_currency(property.price_per_night * 1.17) }}</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-bottom: 0.8rem;">
+            Proceed to Reservation
+          </button>
+        </form>
+
+        <div style="text-align: center; font-size: 0.8rem; color: var(--ur-muted);">
+          🔒 You won't be charged yet. Secure reservation via UniRent.
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+</div>
+
+{% endblock %}

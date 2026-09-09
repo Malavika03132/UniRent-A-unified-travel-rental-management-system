@@ -1,0 +1,79 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}My Properties — Owner Portal{% endblock %}
+{% block page_title %}Heritage Properties Directory{% endblock %}
+
+{% block dashboard_content %}
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+  <div>
+    <h3 style="font-size: 1.25rem; margin: 0 0 0.3rem;">Properties Under Your Curation</h3>
+    <p style="color: var(--ur-muted); font-size: 0.88rem; margin: 0;">Manage your traditional Kerala Tharavadus, Nalukettu homes, and Heritage Villas.</p>
+  </div>
+  <a href="{{ url_for('owner.add_property') }}" class="btn btn-primary btn-sm">+ Add New Property</a>
+</div>
+
+<div class="table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Property Details</th>
+        <th>Type & Capacity</th>
+        <th>District / Location</th>
+        <th>Price / Night</th>
+        <th>Approval Status</th>
+        <th>Availability</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in properties %}
+        <tr>
+          <td>
+            <div style="display: flex; gap: 0.8rem; align-items: center;">
+              <img src="{{ p.featured_image }}" alt="Thumb" style="width: 55px; height: 45px; border-radius: 4px; object-fit: cover;">
+              <div>
+                <strong style="color: var(--ur-brown);">{{ p.property_name }}</strong>
+                <div style="font-size: 0.78rem; color: var(--ur-muted);">★ {{ p.average_rating }} ({{ p.reviews_count }} reviews)</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div>{{ p.property_type }}</div>
+            <div style="font-size: 0.78rem; color: var(--ur-muted);">{{ p.guest_capacity }} Guests • {{ p.bedrooms }} BR</div>
+          </td>
+          <td>
+            <strong>{{ p.district }}</strong>
+            <div style="font-size: 0.78rem; color: var(--ur-muted);">{{ p.address[:25] }}...</div>
+          </td>
+          <td><strong style="color: var(--ur-burnt-orange);">{{ format_currency(p.price_per_night) }}</strong></td>
+          <td>
+            {% if p.approval_status == 'approved' %}
+              <span class="badge badge-approved">Approved</span>
+            {% elif p.approval_status == 'pending' %}
+              <span class="badge badge-pending">Pending Approval</span>
+            {% else %}
+              <span class="badge badge-rejected" title="{{ p.rejection_reason or 'Rejected by Admin' }}">Rejected</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="badge badge-pickup">{{ p.availability_status|capitalize }}</span>
+          </td>
+          <td>
+            <div style="display: flex; gap: 0.4rem;">
+              <a href="{{ url_for('main.stay_details', property_id=p.property_id) }}" class="btn btn-outline btn-sm" target="_blank">View</a>
+            </div>
+          </td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="7" style="text-align: center; padding: 3rem 1rem; color: var(--ur-muted);">
+            No heritage properties listed yet. <a href="{{ url_for('owner.add_property') }}">Add your first property</a>.
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

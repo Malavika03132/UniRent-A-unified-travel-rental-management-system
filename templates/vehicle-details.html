@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}{{ vehicle.vehicle_name }} — UniRent Kerala Vehicle Rentals{% endblock %}
+
+{% block content %}
+
+<div class="container" style="padding-top: 2rem;">
+  
+  <!-- Breadcrumb -->
+  <div style="font-size: 0.88rem; color: var(--ur-muted); margin-bottom: 1rem;">
+    <a href="{{ url_for('main.index') }}">Home</a> &gt; 
+    <a href="{{ url_for('main.vehicles') }}">Vehicles</a> &gt; 
+    <a href="{{ url_for('main.vehicles', type=vehicle.vehicle_type) }}">{{ vehicle.vehicle_type|capitalize }}s</a> &gt; 
+    <span>{{ vehicle.vehicle_name }}</span>
+  </div>
+
+  <!-- Vehicle Title Header -->
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+    <div>
+      <span class="badge badge-delivery" style="margin-bottom: 0.5rem;">{{ vehicle.vehicle_type|capitalize }} • {{ vehicle.model }}</span>
+      <h1 style="font-size: 2.4rem; margin: 0.2rem 0 0.5rem;">{{ vehicle.vehicle_name }}</h1>
+      <div style="display: flex; align-items: center; gap: 1.2rem; font-size: 0.95rem; color: var(--ur-text);">
+        <span>📍 {{ vehicle.pickup_location }}, {{ vehicle.district }}</span>
+        <span>★ <strong>{{ vehicle.average_rating }}</strong> ({{ vehicle.reviews_count }} ratings)</span>
+      </div>
+    </div>
+
+    <div>
+      {% if vehicle.delivery_available %}
+        <span class="badge badge-delivery" style="font-size:0.85rem; padding: 0.4rem 0.9rem;">
+          Pickup OR Owner Delivery
+        </span>
+      {% else %}
+        <span class="badge badge-pickup" style="font-size:0.85rem; padding: 0.4rem 0.9rem;">
+          Pickup Only
+        </span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Image Showcase -->
+  <div style="border-radius: var(--radius-md); overflow: hidden; height: 420px; margin-bottom: 3rem; box-shadow: var(--shadow-md); border: 1px solid var(--ur-border);">
+    <img src="{{ vehicle.featured_image }}" alt="{{ vehicle.vehicle_name }}" style="width:100%; height:100%; object-fit:cover;">
+  </div>
+
+  <!-- Layout: Details & Booking Widget -->
+  <div class="details-layout">
+    
+    <div>
+      <!-- Specifications Quick Grid -->
+      <section style="margin-bottom: 3rem;">
+        <h3 style="margin-bottom: 1.2rem;">Vehicle Specifications</h3>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+          <div style="background: var(--ur-ivory); border: 1px solid var(--ur-border); border-radius: var(--radius-sm); padding: 1.2rem; text-align: center;">
+            <div style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--ur-muted);">Transmission</div>
+            <div style="font-size: 1.1rem; font-weight: 600; color: var(--ur-brown); margin-top: 0.3rem;">
+              {{ vehicle.specs_dict.get('transmission', 'Manual') }}
+            </div>
+          </div>
+          <div style="background: var(--ur-ivory); border: 1px solid var(--ur-border); border-radius: var(--radius-sm); padding: 1.2rem; text-align: center;">
+            <div style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--ur-muted);">Fuel Type</div>
+            <div style="font-size: 1.1rem; font-weight: 600; color: var(--ur-brown); margin-top: 0.3rem;">
+              {{ vehicle.specs_dict.get('fuel', 'Petrol') }}
+            </div>
+          </div>
+          <div style="background: var(--ur-ivory); border: 1px solid var(--ur-border); border-radius: var(--radius-sm); padding: 1.2rem; text-align: center;">
+            <div style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--ur-muted);">Capacity</div>
+            <div style="font-size: 1.1rem; font-weight: 600; color: var(--ur-brown); margin-top: 0.3rem;">
+              {{ vehicle.specs_dict.get('seats', '2 Seater') }}
+            </div>
+          </div>
+          <div style="background: var(--ur-ivory); border: 1px solid var(--ur-border); border-radius: var(--radius-sm); padding: 1.2rem; text-align: center;">
+            <div style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--ur-muted);">Efficiency</div>
+            <div style="font-size: 1.1rem; font-weight: 600; color: var(--ur-brown); margin-top: 0.3rem;">
+              {{ vehicle.specs_dict.get('mileage', '30 kmpl') }}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Description -->
+      <section style="margin-bottom: 3rem;">
+        <h3 style="margin-bottom: 1rem;">Vehicle Overview</h3>
+        <p style="font-size: 1.05rem; line-height: 1.7; color: var(--ur-text);">
+          {{ vehicle.description }}
+        </p>
+      </section>
+
+      <!-- Delivery / Pickup Details -->
+      <section style="margin-bottom: 3rem; background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.8rem;">
+        <h4 style="margin-bottom: 0.6rem;">Pickup & Delivery Protocol</h4>
+        {% if vehicle.delivery_available %}
+          <div style="display: flex; gap: 0.8rem; align-items: flex-start; margin-bottom: 0.8rem;">
+            <span style="font-size: 1.5rem;">🚚</span>
+            <div>
+              <strong>Owner Delivery Available:</strong> The host can deliver this vehicle directly to your heritage stay, Kochi Airport (COK), or Thrissur railway station upon request.
+            </div>
+          </div>
+        {% else %}
+          <div style="display: flex; gap: 0.8rem; align-items: flex-start; margin-bottom: 0.8rem;">
+            <span style="font-size: 1.5rem;">📍</span>
+            <div>
+              <strong>Designated Hub Pickup:</strong> Collect and return this vehicle at the host's verified local garage in {{ vehicle.pickup_location }}.
+            </div>
+          </div>
+        {% endif %}
+      </section>
+
+      <!-- Host Info -->
+      <section style="margin-bottom: 3rem; background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.8rem;">
+        <div style="display: flex; align-items: center; gap: 1.2rem; margin-bottom: 0.8rem;">
+          <div class="user-avatar-circle" style="width: 50px; height: 50px; font-size: 1.2rem;">
+            {{ vehicle.owner.user.full_name[:1] if vehicle.owner and vehicle.owner.user else 'H' }}
+          </div>
+          <div>
+            <h4 style="margin:0;">Vehicle Fleet Host: {{ vehicle.owner.user.full_name if vehicle.owner and vehicle.owner.user else 'UniRent Host' }}</h4>
+            <div style="font-size: 0.85rem; color: var(--ur-muted);">{{ vehicle.owner.business_name if vehicle.owner else 'Verified Kerala Mobility Host' }}</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pickup Location Map -->
+      <section style="margin-bottom: 3rem;">
+        <h3 style="margin-bottom: 0.5rem;">Vehicle Hub Location</h3>
+        <p style="font-size: 0.92rem; color: var(--ur-muted); margin-bottom: 1.2rem;">
+          {{ vehicle.pickup_location }}, {{ vehicle.district }}, Kerala
+        </p>
+        <div class="map-container"
+             data-leaflet-lat="{{ vehicle.latitude }}"
+             data-leaflet-lng="{{ vehicle.longitude }}"
+             data-leaflet-title="{{ vehicle.vehicle_name }}"
+             data-leaflet-zoom="15">
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Right Sidebar Booking Widget -->
+    <aside>
+      <div class="booking-sidebar-widget">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.2rem;">
+          <div>
+            <span style="font-size: 1.8rem; font-weight: 700; color: var(--ur-burnt-orange);">{{ format_currency(vehicle.price_per_day) }}</span>
+            <span style="font-size: 0.85rem; color: var(--ur-muted);">/ day</span>
+          </div>
+          <div style="font-size: 0.85rem; font-weight: 600; color: var(--ur-brown);">
+            ★ {{ vehicle.average_rating }}
+          </div>
+        </div>
+
+        <form action="{{ url_for('main.booking') }}" method="GET">
+          <input type="hidden" name="type" value="vehicle">
+          <input type="hidden" name="id" value="{{ vehicle.vehicle_id }}">
+
+          <div class="form-group">
+            <label for="pickup_date">Pickup Date</label>
+            <input type="date" id="pickup_date" name="start" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label for="return_date">Return Date</label>
+            <input type="date" id="return_date" name="end" class="form-control" required>
+          </div>
+
+          <div class="pricing-breakdown">
+            <div class="price-row">
+              <span>Daily Rental Rate</span>
+              <span>{{ format_currency(vehicle.price_per_day) }}</span>
+            </div>
+            <div class="price-row">
+              <span>Mobility Service Fee (5%)</span>
+              <span>{{ format_currency(vehicle.price_per_day * 0.05) }}</span>
+            </div>
+            <div class="price-row">
+              <span>Applicable GST (12%)</span>
+              <span>{{ format_currency(vehicle.price_per_day * 0.12) }}</span>
+            </div>
+            <div class="price-row total">
+              <span>Estimated (1 Day)</span>
+              <span>{{ format_currency(vehicle.price_per_day * 1.17) }}</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-bottom: 0.8rem;">
+            Book Vehicle Now
+          </button>
+        </form>
+
+        <div style="text-align: center; font-size: 0.8rem; color: var(--ur-muted);">
+          🛡️ Includes comprehensive vehicle insurance & road assistance.
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+</div>
+
+{% endblock %}

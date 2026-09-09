@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Dashboard — UniRent Kerala{% endblock %}</title>
+  
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  
+  <!-- Master Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="dashboard-container">
+  
+  <!-- Left Sidebar Navigation -->
+  <aside class="dashboard-sidebar">
+    <div class="sidebar-header">
+      <a href="{{ url_for('main.index') }}" class="sidebar-brand">
+        UniRent<span class="logo-dot"></span>
+      </a>
+      <div>
+        <span class="sidebar-role-badge">
+          {% if current_user.role == 'admin' %}Administrator Portal
+          {% elif current_user.role == 'owner' %}Property & Vehicle Host
+          {% else %}Traveler Account{% endif %}
+        </span>
+      </div>
+    </div>
+
+    <ul class="sidebar-menu">
+      {% if current_user.role == 'admin' %}
+        <!-- ADMIN NAVIGATION -->
+        <li class="sidebar-item">
+          <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+            <span>📊</span> <span>Overview</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('admin.approvals') }}" class="sidebar-link {% if request.endpoint == 'admin.approvals' %}active{% endif %}">
+            <span>🛡️</span> <span>Listing Approvals</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('admin.travelers') }}" class="sidebar-link {% if request.endpoint == 'admin.travelers' %}active{% endif %}">
+            <span>👥</span> <span>Travelers</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('admin.owners') }}" class="sidebar-link {% if request.endpoint == 'admin.owners' %}active{% endif %}">
+            <span>🏨</span> <span>Owners</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('admin.properties') }}" class="sidebar-link {% if request.endpoint == 'admin.properties' %}active{% endif %}">
+            <span>🏡</span> <span>All Properties</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('admin.vehicles') }}" class="sidebar-link {% if request.endpoint == 'admin.vehicles' %}active{% endif %}">
+            <span>🚗</span> <span>All Vehicles</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('admin.bookings') }}" class="sidebar-link {% if request.endpoint == 'admin.bookings' %}active{% endif %}">
+            <span>📅</span> <span>Bookings</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('admin.payments') }}" class="sidebar-link {% if request.endpoint == 'admin.payments' %}active{% endif %}">
+            <span>💳</span> <span>Payments</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('admin.complaints') }}" class="sidebar-link {% if request.endpoint == 'admin.complaints' %}active{% endif %}">
+            <span>⚖️</span> <span>Complaints</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('admin.reports') }}" class="sidebar-link {% if request.endpoint == 'admin.reports' %}active{% endif %}">
+            <span>📈</span> <span>Reports & Analytics</span>
+          </a>
+        </li>
+
+      {% elif current_user.role == 'owner' %}
+        <!-- OWNER NAVIGATION -->
+        <li class="sidebar-item">
+          <a href="{{ url_for('owner.dashboard') }}" class="sidebar-link {% if request.endpoint == 'owner.dashboard' %}active{% endif %}">
+            <span>📊</span> <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('owner.properties') }}" class="sidebar-link {% if request.endpoint == 'owner.properties' %}active{% endif %}">
+            <span>🏡</span> <span>My Properties</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('owner.add_property') }}" class="sidebar-link {% if request.endpoint == 'owner.add_property' %}active{% endif %}">
+            <span>➕</span> <span>Add Property</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('owner.vehicles') }}" class="sidebar-link {% if request.endpoint == 'owner.vehicles' %}active{% endif %}">
+            <span>🚗</span> <span>My Vehicles</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('owner.add_vehicle') }}" class="sidebar-link {% if request.endpoint == 'owner.add_vehicle' %}active{% endif %}">
+            <span>➕</span> <span>Add Vehicle</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('owner.bookings') }}" class="sidebar-link {% if request.endpoint == 'owner.bookings' %}active{% endif %}">
+            <span>📅</span> <span>Guest Bookings</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('owner.payments') }}" class="sidebar-link {% if request.endpoint == 'owner.payments' %}active{% endif %}">
+            <span>💳</span> <span>Revenue & Payouts</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('owner.reviews') }}" class="sidebar-link {% if request.endpoint == 'owner.reviews' %}active{% endif %}">
+            <span>⭐</span> <span>Guest Reviews</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('owner.complaints') }}" class="sidebar-link {% if request.endpoint == 'owner.complaints' %}active{% endif %}">
+            <span>⚠️</span> <span>Complaints</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('owner.profile') }}" class="sidebar-link {% if request.endpoint == 'owner.profile' %}active{% endif %}">
+            <span>👤</span> <span>Host Profile</span>
+          </a>
+        </li>
+
+      {% else %}
+        <!-- TRAVELER NAVIGATION -->
+        <li class="sidebar-item">
+          <a href="{{ url_for('traveler.dashboard') }}" class="sidebar-link {% if request.endpoint == 'traveler.dashboard' %}active{% endif %}">
+            <span>🧭</span> <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('main.stays') }}" class="sidebar-link">
+            <span>🏡</span> <span>Explore Stays</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('main.vehicles') }}" class="sidebar-link">
+            <span>🛵</span> <span>Rental Vehicles</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('traveler.bookings') }}" class="sidebar-link {% if request.endpoint == 'traveler.bookings' %}active{% endif %}">
+            <span>📅</span> <span>My Bookings</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('traveler.reviews') }}" class="sidebar-link {% if request.endpoint == 'traveler.reviews' %}active{% endif %}">
+            <span>⭐</span> <span>My Reviews</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('traveler.complaints') }}" class="sidebar-link {% if request.endpoint == 'traveler.complaints' %}active{% endif %}">
+            <span>⚠️</span> <span>My Complaints</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('traveler.payments') }}" class="sidebar-link {% if request.endpoint == 'traveler.payments' %}active{% endif %}">
+            <span>💳</span> <span>Payments & Receipts</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="{{ url_for('traveler.profile') }}" class="sidebar-link {% if request.endpoint == 'traveler.profile' %}active{% endif %}">
+            <span>👤</span> <span>Profile</span>
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+
+    <div class="sidebar-footer">
+      <a href="{{ url_for('main.index') }}" class="sidebar-link" style="padding-left:0; color:#ffaa85;">
+        <span>🌐</span> <span>View Public Site</span>
+      </a>
+      <a href="{{ url_for('auth.logout') }}" class="sidebar-link" style="padding-left:0; color:#ff7b7b;">
+        <span>🚪</span> <span>Sign Out</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="dashboard-main">
+    
+    <!-- Top Header -->
+    <header class="dashboard-topbar">
+      <div style="display:flex; align-items:center; gap:1rem;">
+        <button id="dashboard_sidebar_toggle" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--ur-brown); display:block;">
+          ☰
+        </button>
+        <h3 style="font-size:1.35rem; margin:0;">{% block page_title %}Dashboard{% endblock %}</h3>
+      </div>
+
+      <div class="topbar-user">
+        <div style="text-align:right;">
+          <div style="font-weight:600; font-size:0.92rem; color:var(--ur-brown);">{{ current_user.full_name }}</div>
+          <div style="font-size:0.78rem; color:var(--ur-muted); text-transform:capitalize;">{{ current_user.role }} • {{ current_user.email }}</div>
+        </div>
+        <div class="user-avatar-circle">
+          {{ current_user.full_name[:1] }}
+        </div>
+      </div>
+    </header>
+
+    <!-- Flashed Notifications -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div style="padding: 1.5rem 2.2rem 0;">
+          {% for category, message in messages %}
+            <div class="alert-auto-dismiss" style="padding: 0.9rem 1.25rem; border-radius: var(--radius-sm); margin-bottom: 0.75rem; font-size: 0.92rem; font-weight: 500; 
+              {% if category == 'success' %}background-color: var(--status-approved-bg); color: var(--status-approved-text); border: 1px solid #c3e6cb;
+              {% elif category == 'danger' %}background-color: var(--status-rejected-bg); color: var(--status-rejected-text); border: 1px solid #f5c6cb;
+              {% elif category == 'warning' %}background-color: var(--status-pending-bg); color: var(--status-pending-text); border: 1px solid #fedfa8;
+              {% else %}background-color: var(--status-active-bg); color: var(--status-active-text); border: 1px solid #b8daff;{% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Subpage Content -->
+    <div class="dashboard-content">
+      {% block dashboard_content %}{% endblock %}
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Scripts -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% block dashboard_scripts %}{% endblock %}
+</body>
+</html>

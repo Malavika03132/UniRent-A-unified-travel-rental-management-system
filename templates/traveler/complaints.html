@@ -1,0 +1,126 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}My Complaints & Support — Traveler Portal{% endblock %}
+{% block page_title %}Support & Complaints{% endblock %}
+
+{% block dashboard_content %}
+
+<div style="display: grid; grid-template-columns: 1.3fr 1fr; gap: 2.5rem;">
+  
+  <!-- Left Side: My Complaints List & History -->
+  <div>
+    <h3 style="font-size: 1.25rem; margin-bottom: 1.2rem;">Your Support Tickets</h3>
+
+    {% if complaints %}
+      <div style="display: flex; flex-direction: column; gap: 1.4rem;">
+        {% for c in complaints %}
+          <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.6rem; box-shadow: var(--shadow-sm);">
+            
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.8rem;">
+              <div>
+                <span class="badge badge-pickup" style="margin-bottom: 0.3rem;">{{ c.category }}</span>
+                <h4 style="font-size: 1.1rem; margin: 0.2rem 0;">Ticket: {{ c.complaint_reference }}</h4>
+                <div style="font-size: 0.8rem; color: var(--ur-muted);">
+                  Booking Ref: {{ c.booking.booking_reference }} • Filed {{ c.created_at.strftime('%b %d, %Y') }}
+                </div>
+              </div>
+              <div>
+                {% if c.status == 'resolved' %}
+                  <span class="badge badge-approved">Resolved</span>
+                {% elif c.status == 'owner_responded' %}
+                  <span class="badge badge-active">Host Responded</span>
+                {% elif c.status == 'under_review' %}
+                  <span class="badge badge-pending">Under Review</span>
+                {% elif c.status == 'rejected' %}
+                  <span class="badge badge-rejected">Rejected</span>
+                {% else %}
+                  <span class="badge badge-pending">Open</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <p style="font-size: 0.93rem; color: var(--ur-text); background: var(--ur-light-ivory); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--ur-border-light); margin-bottom: 1rem;">
+              <strong>Your Complaint:</strong> {{ c.description }}
+            </p>
+
+            <!-- Host Response Box -->
+            {% if c.owner_response %}
+              <div style="background: #fdfaf5; border-left: 4px solid var(--ur-burnt-orange); padding: 1rem 1.2rem; border-radius: 4px; margin-bottom: 0.8rem; font-size: 0.9rem;">
+                <div style="font-weight: 700; color: var(--ur-brown); font-size: 0.82rem; text-transform: uppercase; margin-bottom: 0.3rem;">
+                  🏨 Host Response ({{ c.owner.user.full_name }}):
+                </div>
+                <div>{{ c.owner_response }}</div>
+              </div>
+            {% endif %}
+
+            <!-- Admin Resolution Box -->
+            {% if c.admin_response %}
+              <div style="background: #e8f4fd; border-left: 4px solid #1976d2; padding: 1rem 1.2rem; border-radius: 4px; font-size: 0.9rem;">
+                <div style="font-weight: 700; color: #1565c0; font-size: 0.82rem; text-transform: uppercase; margin-bottom: 0.3rem;">
+                  🛡️ UniRent Concierge Resolution:
+                </div>
+                <div>{{ c.admin_response }}</div>
+              </div>
+            {% endif %}
+
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 3rem 2rem; text-align: center; color: var(--ur-muted);">
+        <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">🕊️</div>
+        <h4>No Complaints on Record</h4>
+        <p style="font-size: 0.9rem; margin-top: 0.4rem;">If you ever encounter an issue with a heritage property or vehicle, file a ticket using the form on the right.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Right Side: File Complaint Form -->
+  <div>
+    <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 2rem; box-shadow: var(--shadow-sm); position: sticky; top: calc(var(--header-height) + 1.5rem);">
+      <h3 style="font-size: 1.25rem; margin-bottom: 0.4rem;">File a Complaint</h3>
+      <p style="color: var(--ur-muted); font-size: 0.88rem; margin-bottom: 1.5rem;">UniRent ensures every dispute is reviewed promptly by the host and regional management.</p>
+
+      {% if bookings %}
+        <form action="{{ url_for('traveler.complaints') }}" method="POST">
+          <div class="form-group">
+            <label for="complaint_booking_id">Associated Booking</label>
+            <select id="complaint_booking_id" name="booking_id" class="form-control" required>
+              {% for b in bookings %}
+                <option value="{{ b.booking_id }}">{{ b.booking_reference }} — {{ b.listing_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="complaint_category">Complaint Category</label>
+            <select id="complaint_category" name="category" class="form-control" required>
+              <option value="Property Damage">Property Damage</option>
+              <option value="Vehicle Issue">Vehicle Issue / Mechanical</option>
+              <option value="Cleanliness">Cleanliness & Hygiene</option>
+              <option value="Missing Facility">Missing Facility / Amenity</option>
+              <option value="Owner/Service Issue" selected>Owner / Service Issue</option>
+              <option value="Payment Issue">Payment / Billing Issue</option>
+              <option value="Safety Concern">Safety Concern</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="complaint_description">Detailed Description</label>
+            <textarea id="complaint_description" name="description" rows="4" class="form-control" placeholder="Please provide exact details regarding what occurred..." required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">Submit Complaint Ticket</button>
+        </form>
+      {% else %}
+        <div style="background: var(--ur-ivory); border: 1px solid var(--ur-border); border-radius: var(--radius-sm); padding: 1.5rem; text-align: center; font-size: 0.88rem; color: var(--ur-muted);">
+          ℹ️ You need to have an active or completed booking to raise a complaint.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

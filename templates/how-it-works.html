@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}How UniRent Works — Travelers & Heritage Hosts{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div style="background-color: var(--ur-brown); color: var(--ur-ivory); padding: 4.5rem 0 3.5rem; text-align: center;">
+  <div class="container" style="max-width: 750px;">
+    <span style="color: #ffaa85; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;">Seamless Experience</span>
+    <h1 style="color: var(--ur-white); font-size: 2.8rem; margin: 0.5rem 0 1rem;">How UniRent Works</h1>
+    <p style="color: #d8cec1; font-size: 1.1rem; line-height: 1.6;">
+      A step-by-step guide for mindful travelers seeking authentic stays and owners wishing to share Kerala’s architectural treasures.
+    </p>
+  </div>
+</div>
+
+<div class="container" style="padding: 5rem 0;">
+  
+  <!-- For Travelers -->
+  <div style="margin-bottom: 6rem;">
+    <div style="text-align: center; max-width: 600px; margin: 0 auto 3.5rem;">
+      <span class="badge badge-delivery" style="margin-bottom: 0.5rem;">For Travelers</span>
+      <h2>Your Journey In 4 Simple Steps</h2>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem;">
+      <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 2rem 1.5rem; text-align: center; box-shadow: var(--shadow-sm);">
+        <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--ur-ivory); border: 1px solid var(--ur-border); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 700; color: var(--ur-burnt-orange); margin: 0 auto 1.2rem;">1</div>
+        <h4 style="margin-bottom: 0.6rem;">Discover</h4>
+        <p style="color: var(--ur-muted); font-size: 0.9rem;">Browse verified heritage stays and companion rental vehicles in Ernakulam and Thrissur.</p>
+      </div>
+
+      <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 2rem 1.5rem; text-align: center; box-shadow: var(--shadow-sm);">
+        <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--ur-ivory); border: 1px solid var(--ur-border); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 700; color: var(--ur-burnt-orange); margin: 0 auto 1.2rem;">2</div>
+        <h4 style="margin-bottom: 0.6rem;">Select Dates</h4>
+        <p style="color: var(--ur-muted); font-size: 0.9rem;">Check real-time availability, review pricing breakdowns with taxes and transparent concierge fees.</p>
+      </div>
+
+      <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 2rem 1.5rem; text-align: center; box-shadow: var(--shadow-sm);">
+        <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--ur-ivory); border: 1px solid var(--ur-border); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 700; color: var(--ur-burnt-orange); margin: 0 auto 1.2rem;">3</div>
+        <h4 style="margin-bottom: 0.6rem;">Secure Booking</h4>
+        <p style="color: var(--ur-muted); font-size: 0.9rem;">Instant confirmation with instant receipt and direct connection to your verified Kerala host.</p>
+      </div>
+
+      <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 2rem 1.5rem; text-align: center; box-shadow: var(--shadow-sm);">
+        <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--ur-ivory); border: 1px solid var(--ur-border); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 700; color: var(--ur-burnt-orange); margin: 0 auto 1.2rem;">4</div>
+        <h4 style="margin-bottom: 0.6rem;">Immerse & Review</h4>
+        <p style="color: var(--ur-muted); font-size: 0.9rem;">Experience authentic Kerala hospitality, explore on your vehicle, and leave your verified stay review.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- For Owners / Hosts -->
+  <div style="background-color: var(--ur-ivory); border-radius: var(--radius-md); border: 1px solid var(--ur-border); padding: 4rem 3rem;">
+    <div style="text-align: center; max-width: 600px; margin: 0 auto 3.5rem;">
+      <span class="badge badge-pickup" style="margin-bottom: 0.5rem;">For Property & Vehicle Hosts</span>
+      <h2>Hosting on UniRent</h2>
+      <p style="color: var(--ur-muted); margin-top: 0.5rem;">Monetize and safeguard your heritage property or mobility fleet.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5rem;">
+      <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-sm); padding: 2rem;">
+        <h4 style="color: var(--ur-burnt-orange); margin-bottom: 0.5rem;">1. Submit Listing</h4>
+        <p style="font-size: 0.92rem; color: var(--ur-text); line-height: 1.6;">
+          Register as an Owner and enter property or vehicle details, photos, amenities, pricing, and exact geographic coordinates.
+        </p>
+      </div>
+
+      <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-sm); padding: 2rem;">
+        <h4 style="color: var(--ur-burnt-orange); margin-bottom: 0.5rem;">2. Admin Verification</h4>
+        <p style="font-size: 0.92rem; color: var(--ur-text); line-height: 1.6;">
+          UniRent Administrators review your listing for heritage authenticity, safety certifications, and compliance before publication.
+        </p>
+      </div>
+
+      <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-sm); padding: 2rem;">
+        <h4 style="color: var(--ur-burnt-orange); margin-bottom: 0.5rem;">3. Welcome Guests & Earn</h4>
+        <p style="font-size: 0.92rem; color: var(--ur-text); line-height: 1.6;">
+          Receive reservations directly inside your dedicated Owner Dashboard with transparent 90% net revenue payouts.
+        </p>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 3rem;">
+      <a href="{{ url_for('auth.register', role='owner') }}" class="btn btn-primary btn-lg">Apply as an Owner Today</a>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

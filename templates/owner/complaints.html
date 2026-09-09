@@ -1,0 +1,102 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Guest Complaints — Owner Portal{% endblock %}
+{% block page_title %}Complaints & Dispute Resolution{% endblock %}
+
+{% block dashboard_content %}
+
+<div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+  <div>
+    <h3 style="font-size: 1.25rem; margin: 0 0 0.3rem;">Guest Inquiries & Complaints</h3>
+    <p style="color: var(--ur-muted); font-size: 0.88rem; margin: 0;">Respond promptly to guest feedback to ensure outstanding host reputation and prompt issue resolution.</p>
+  </div>
+  <div>
+    <span class="badge badge-pickup">{{ complaints|length }} Total Tickets</span>
+  </div>
+</div>
+
+{% if complaints %}
+  <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+    {% for c in complaints %}
+      <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.8rem; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+          <div>
+            <span class="badge badge-pickup" style="margin-bottom: 0.3rem;">{{ c.category }}</span>
+            <h4 style="font-size: 1.15rem; margin: 0.2rem 0;">Ticket: {{ c.complaint_reference }}</h4>
+            <div style="font-size: 0.82rem; color: var(--ur-muted);">
+              Guest: <strong>{{ c.user.full_name }}</strong> • Booking Ref: {{ c.booking.booking_reference }} • Filed on {{ c.created_at.strftime('%b %d, %Y') }}
+            </div>
+          </div>
+          <div>
+            <span class="badge {% if c.status == 'resolved' %}badge-approved{% elif c.status == 'owner_responded' %}badge-active{% else %}badge-pending{% endif %}">
+              {{ c.status|replace('_', ' ')|capitalize }}
+            </span>
+          </div>
+        </div>
+
+        <div style="background: var(--ur-light-ivory); border: 1px solid var(--ur-border-light); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1.2rem; font-size: 0.93rem;">
+          <strong>Guest Statement:</strong><br>
+          {{ c.description }}
+        </div>
+
+        {% if c.owner_response %}
+          <div style="background: #fcf9f5; border-left: 4px solid var(--ur-burnt-orange); padding: 1rem 1.2rem; border-radius: 4px; font-size: 0.9rem; margin-bottom: 1rem;">
+            <div style="font-weight: 700; color: var(--ur-brown); font-size: 0.82rem; text-transform: uppercase; margin-bottom: 0.3rem;">
+              ✓ Your Recorded Host Response:
+            </div>
+            <div>{{ c.owner_response }}</div>
+          </div>
+        {% endif %}
+
+        {% if c.admin_response %}
+          <div style="background: #e8f4fd; border-left: 4px solid #1976d2; padding: 1rem 1.2rem; border-radius: 4px; font-size: 0.9rem; margin-bottom: 1rem;">
+            <div style="font-weight: 700; color: #1565c0; font-size: 0.82rem; text-transform: uppercase; margin-bottom: 0.3rem;">
+              🛡️ Admin Concierge Note:
+            </div>
+            <div>{{ c.admin_response }}</div>
+          </div>
+        {% endif %}
+
+        <div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="openComplaintResponseModal({{ c.complaint_id }}, '{{ c.complaint_reference }}', '{{ c.category }}')">
+            {% if c.owner_response %}Update Response{% else %}Provide Host Response{% endif %}
+          </button>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 3.5rem 2rem; text-align: center; color: var(--ur-muted);">
+    <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">✓</div>
+    <h4>Zero Complaints</h4>
+    <p style="font-size: 0.9rem; margin-top: 0.4rem;">None of your guests have filed any issues. Keep up the wonderful Kerala hospitality!</p>
+  </div>
+{% endif %}
+
+<!-- Response Modal -->
+<div id="complaint_response_modal" class="modal-backdrop">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h4 style="margin:0;">Respond to Guest Complaint</h4>
+      <button type="button" onclick="closeModal('complaint_response_modal')" style="background:none; border:none; font-size:1.4rem; cursor:pointer;">&times;</button>
+    </div>
+    <form action="{{ url_for('owner.complaints') }}" method="POST">
+      <div class="modal-body">
+        <input type="hidden" id="response_complaint_id" name="complaint_id">
+        <div style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--ur-muted);">
+          Ticket: <strong id="response_complaint_ref" style="color: var(--ur-brown);"></strong>
+        </div>
+        <div class="form-group">
+          <label for="owner_response_text">Host Explanation / Remediation Steps</label>
+          <textarea id="owner_response_text" name="owner_response" rows="5" class="form-control" placeholder="Describe the steps taken to address the traveler's concern..." required></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('complaint_response_modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Submit Response</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

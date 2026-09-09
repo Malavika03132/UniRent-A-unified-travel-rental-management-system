@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Booking Confirmed — {{ booking.booking_reference }} — UniRent{% endblock %}
+
+{% block content %}
+
+<div class="container" style="padding: 4rem 0 6rem;">
+  
+  <div style="max-width: 720px; margin: 0 auto;">
+    
+    <!-- Success Banner Card -->
+    <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); overflow: hidden; text-align: center; padding: 3rem 2rem 2.5rem; margin-bottom: 2rem;">
+      
+      <div style="width: 70px; height: 70px; border-radius: 50%; background: var(--status-approved-bg); color: var(--status-approved-text); border: 2px solid #c3e6cb; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; margin: 0 auto 1.5rem;">
+        ✓
+      </div>
+
+      <span class="badge badge-approved" style="font-size: 0.85rem; padding: 0.35rem 0.9rem; margin-bottom: 0.8rem;">Booking Confirmed</span>
+      <h1 style="font-size: 2.2rem; margin-bottom: 0.5rem;">You’re Kerala Bound!</h1>
+      <p style="color: var(--ur-muted); font-size: 1.05rem; max-width: 540px; margin: 0 auto 1.8rem;">
+        Your reservation for <strong>{{ booking.listing_name }}</strong> is confirmed. A receipt and host coordination details have been sent to your registered email.
+      </p>
+
+      <div style="background: var(--ur-ivory); border: 1px dashed var(--ur-burnt-orange); border-radius: var(--radius-sm); padding: 1.2rem; display: inline-block; margin-bottom: 2rem;">
+        <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--ur-muted); display: block; margin-bottom: 0.3rem;">Booking Reference Number</span>
+        <span style="font-size: 1.6rem; font-family: monospace; font-weight: 700; color: var(--ur-burnt-orange); letter-spacing: 0.05em;">{{ booking.booking_reference }}</span>
+      </div>
+
+      <!-- Receipt Summary Breakdown -->
+      <div style="text-align: left; background: var(--ur-light-ivory); border: 1px solid var(--ur-border); border-radius: var(--radius-sm); padding: 1.8rem; margin-bottom: 2.5rem;">
+        <h4 style="font-size: 1.1rem; margin-bottom: 1.2rem; border-bottom: 1px solid var(--ur-border); padding-bottom: 0.6rem;">Reservation Receipt</h4>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.2rem; font-size: 0.92rem;">
+          <div>
+            <div style="color: var(--ur-muted); font-size: 0.8rem; text-transform: uppercase;">Guest / Traveler</div>
+            <strong>{{ booking.user.full_name }}</strong>
+          </div>
+          <div>
+            <div style="color: var(--ur-muted); font-size: 0.8rem; text-transform: uppercase;">Listing Type</div>
+            <strong>{{ booking.listing_type|capitalize }} ({{ booking.listing_name }})</strong>
+          </div>
+          <div>
+            <div style="color: var(--ur-muted); font-size: 0.8rem; text-transform: uppercase;">Dates</div>
+            <strong>{{ booking.start_date.strftime('%b %d, %Y') }} → {{ booking.end_date.strftime('%b %d, %Y') }}</strong>
+          </div>
+          <div>
+            <div style="color: var(--ur-muted); font-size: 0.8rem; text-transform: uppercase;">Total Duration</div>
+            <strong>{{ booking.total_days }} {% if booking.listing_type == 'property' %}Nights{% else %}Days{% endif %}</strong>
+          </div>
+        </div>
+
+        <div class="pricing-breakdown" style="margin: 0; padding: 1rem 0;">
+          <div class="price-row">
+            <span>Daily Rate (× {{ booking.total_days }})</span>
+            <span>{{ format_currency(booking.daily_rate * booking.total_days) }}</span>
+          </div>
+          <div class="price-row">
+            <span>Service & Concierge Fee</span>
+            <span>{{ format_currency(booking.service_fee) }}</span>
+          </div>
+          <div class="price-row">
+            <span>Taxes & GST (12%)</span>
+            <span>{{ format_currency(booking.tax_amount) }}</span>
+          </div>
+          <div class="price-row total">
+            <span>Total Paid</span>
+            <span>{{ format_currency(booking.total_amount) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: center; gap: 1rem;">
+        <button onclick="window.print()" class="btn btn-secondary">
+          🖨️ Print Receipt
+        </button>
+        <a href="{{ url_for('traveler.dashboard') }}" class="btn btn-primary">
+          Go to Traveler Portal
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}

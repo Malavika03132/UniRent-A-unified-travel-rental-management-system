@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In — UniRent Kerala{% endblock %}
+
+{% block content %}
+
+<div class="auth-wrapper">
+  
+  <!-- Left Side: Visual Heritage Showcase -->
+  <div class="auth-sidebar-media">
+    <div class="hero-badge" style="width: fit-content; margin-bottom: 1rem;">
+      Kerala Heritage & Mobility
+    </div>
+    <h2 style="color: var(--ur-white); font-size: 2.4rem; margin-bottom: 0.8rem;">
+      Return to your Kerala sanctuary.
+    </h2>
+    <p style="color: #e5ddd3; font-size: 1.05rem; line-height: 1.6; max-width: 480px; margin-bottom: 0;">
+      Three specialized portals connecting mindful travelers, heritage property & fleet hosts, and regional platform operations across Ernakulam and Thrissur.
+    </p>
+  </div>
+
+  <!-- Right Side: Dedicated 3-Way Login Portals -->
+  <div class="auth-form-side">
+    <div class="auth-card" style="max-width: 520px;">
+      
+      <!-- Dedicated Three Logins Segmented Switcher -->
+      <div style="margin-bottom: 1.8rem;">
+        <div style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ur-muted); margin-bottom: 0.6rem;">
+          Select Portal Access:
+        </div>
+        
+        <div class="auth-tabs" style="display: grid; grid-template-columns: repeat(3, 1fr); padding: 0.35rem; gap: 0.35rem; margin-bottom: 0;">
+          <button type="button" class="auth-tab login-role-tab {% if active_role == 'traveler' %}active{% endif %}" data-role="traveler" onclick="selectLoginPortal('traveler')">
+            Traveler
+          </button>
+          <button type="button" class="auth-tab login-role-tab {% if active_role == 'owner' %}active{% endif %}" data-role="owner" onclick="selectLoginPortal('owner')">
+            Owner
+          </button>
+          <button type="button" class="auth-tab login-role-tab {% if active_role == 'admin' %}active{% endif %}" data-role="admin" onclick="selectLoginPortal('admin')">
+            Admin
+          </button>
+        </div>
+      </div>
+
+      <!-- Dynamic Portal Header -->
+      <div style="margin-bottom: 1.6rem;">
+        <span id="portal_badge" class="badge badge-delivery" style="margin-bottom: 0.5rem; color: #c85a32; 
+         background: #fff4e6; border: 1px solid #f5c6cb; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
+          {% if active_role == 'admin' %}Admin Portal
+          {% elif active_role == 'owner' %}Owner Portal
+          {% else %}Traveler Portal{% endif %}
+          {% if active_role == 'admin' %}Admin Portal
+          {% elif active_role == 'owner' %}Owner Portal
+          {% else %}Traveler Portal{% endif %}
+        </span>
+        <h2 id="portal_title" style="font-size: 1.9rem; margin-bottom: 0.3rem;">
+          {% if active_role == 'admin' %}Administrator Sign In
+          {% elif active_role == 'owner' %}Host Sign In
+          {% else %}Traveler Sign In{% endif %}
+        </h2>
+        <p id="portal_subtitle" style="color: var(--ur-muted); font-size: 0.92rem;">
+          {% if active_role == 'admin' %}Manage listing verifications, travelers, hosts, and platform governance.
+          {% elif active_role == 'owner' %}Manage your heritage properties, rental fleet, bookings, and revenue payouts.
+          {% else %}Access your trip reservations, rental vehicles, and heritage itineraries.{% endif %}
+        </p>
+      </div>
+
+      <form action="{{ url_for('auth.login', next=request.args.get('next')) }}" method="POST" id="unified_login_form">
+        <!-- Hidden role parameter ensuring strict role validation on the server -->
+        <input type="hidden" name="role" id="login_selected_role" value="{{ active_role or 'traveler' }}">
+
+        <div class="form-group">
+          <label for="login_email" id="email_field_label">
+            {% if active_role == 'admin' %}Admin Email Address
+            {% elif active_role == 'owner' %}Host Registered Email
+            {% else %}Traveler Email Address{% endif %}
+          </label>
+          <input type="email" id="login_email" name="email" value="{{ email or '' }}" class="form-control" placeholder="your.email@example.com" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+            <label for="login_password" style="margin:0;">Password</label>
+            <a href="#" style="font-size: 0.82rem; color: var(--ur-burnt-orange);">Forgot Password?</a>
+          </div>
+          <div class="password-wrapper" style="position: relative;">
+            <input type="password" id="login_password" name="password" class="form-control" placeholder="••••••••" required style="padding-right: 4.5rem;">
+            <button type="button" class="password-toggle-btn" style="position: absolute; right: 0.8rem; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 0.82rem; color: var(--ur-muted); font-weight: 600; cursor: pointer;">Show</button>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.3rem;">
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.88rem; color: var(--ur-text); cursor: pointer;">
+            <input type="checkbox" name="remember_me" value="1"> Keep me signed in
+          </label>
+          <button type="button" id="quick_fill_btn" onclick="fillRoleCredentials()" style="background:none; border:none; color:var(--ur-burnt-orange); font-size:0.82rem; font-weight:600; cursor:pointer; text-decoration:underline;">
+            Fill Default Credentials
+          </button>
+        </div>
+
+        <button type="submit" id="submit_login_btn" class="btn btn-primary btn-block btn-lg" style="margin-bottom: 1.2rem;">
+          {% if active_role == 'admin' %}Sign In as Administrator
+          {% elif active_role == 'owner' %}Sign In as Host
+          {% else %}Sign In as Traveler{% endif %}
+        </button>
+
+        <div id="register_hint_box" style="text-align: center; font-size: 0.9rem; color: var(--ur-muted);">
+          Don't have an account? 
+          <a href="{{ url_for('auth.register') }}" style="font-weight: 600; color: var(--ur-burnt-orange);">Create a Traveler or Host Account</a>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+<script>
+  // Dynamic portal switcher
+  function selectLoginPortal(role) {
+    document.querySelectorAll('.login-role-tab').forEach(t => t.classList.remove('active'));
+    const activeTab = document.querySelector(`.login-role-tab[data-role="${role}"]`);
+    if (activeTab) activeTab.classList.add('active');
+
+    const roleInput = document.getElementById('login_selected_role');
+    const badge = document.getElementById('portal_badge');
+    const title = document.getElementById('portal_title');
+    const subtitle = document.getElementById('portal_subtitle');
+    const emailLabel = document.getElementById('email_field_label');
+    const submitBtn = document.getElementById('submit_login_btn');
+    const emailInput = document.getElementById('login_email');
+    const registerHint = document.getElementById('register_hint_box');
+
+    if (roleInput) roleInput.value = role;
+
+    if (role === 'admin') {
+      badge.textContent = 'Admin Portal';
+      badge.className = 'badge badge-pickup';
+      title.textContent = 'Administrator Sign In';
+      subtitle.textContent = 'Platform governance, listing verifications, and dispute arbitration.';
+      emailLabel.textContent = 'Admin Email Address';
+      submitBtn.textContent = 'Sign In as Administrator';
+      emailInput.placeholder = 'admin@unirent.com';
+      if (registerHint) registerHint.style.display = 'none'; // No public admin registration
+    } else if (role === 'owner') {
+      badge.textContent = 'Owner Portal';
+      badge.className = 'badge badge-delivery';
+      title.textContent = 'Host Sign In';
+      subtitle.textContent = 'Manage your heritage properties, rental fleet, bookings, and revenue payouts.';
+      emailLabel.textContent = 'Host Registered Email';
+      submitBtn.textContent = 'Sign In as Host';
+      emailInput.placeholder = 'owner@unirent.com';
+      if (registerHint) registerHint.style.display = 'block';
+    } else {
+      badge.textContent = ' Traveler Portal';
+      badge.className = 'badge badge-delivery';
+      title.textContent = 'Traveler Sign In';
+      subtitle.textContent = 'Access your trip reservations, rental vehicles, and heritage itineraries.';
+      emailLabel.textContent = 'Traveler Email Address';
+      submitBtn.textContent = 'Sign In as Traveler';
+      emailInput.placeholder = 'traveler@unirent.com';
+      if (registerHint) registerHint.style.display = 'block';
+    }
+  }
+
+  function fillRoleCredentials() {
+    const currentRole = document.getElementById('login_selected_role').value;
+    const emailInput = document.getElementById('login_email');
+    const passInput = document.getElementById('login_password');
+
+    if (currentRole === 'admin') {
+      emailInput.value = 'admin@unirent.com';
+      passInput.value = 'admin123';
+    } else if (currentRole === 'owner') {
+      emailInput.value = 'owner@unirent.com';
+      passInput.value = 'owner123';
+    } else {
+      emailInput.value = 'traveler@unirent.com';
+      passInput.value = 'traveler123';
+    }
+  }
+
+  // Check URL param or initial role on load
+  document.addEventListener('DOMContentLoaded', () => {
+    const initialRole = document.getElementById('login_selected_role').value;
+    if (initialRole) {
+      selectLoginPortal(initialRole);
+    }
+  });
+</script>
+{% endblock %}

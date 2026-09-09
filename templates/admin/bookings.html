@@ -1,0 +1,57 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Global Bookings — Admin Portal{% endblock %}
+{% block page_title %}Platform Bookings Ledger{% endblock %}
+
+{% block dashboard_content %}
+
+<div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.5rem 2rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+  <div>
+    <h3 style="font-size: 1.25rem; margin: 0 0 0.3rem;">Master Bookings Registry ({{ bookings|length }})</h3>
+    <p style="color: var(--ur-muted); font-size: 0.88rem; margin: 0;">Complete platform transactions, check-ins, and mobility handovers.</p>
+  </div>
+</div>
+
+<div class="table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Reference</th>
+        <th>Traveler</th>
+        <th>Host</th>
+        <th>Listing</th>
+        <th>Dates & Duration</th>
+        <th>Total Amount</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in bookings %}
+        <tr>
+          <td><strong style="font-family: monospace;">{{ b.booking_reference }}</strong></td>
+          <td>
+            <strong>{{ b.user.full_name }}</strong>
+            <div style="font-size: 0.78rem; color: var(--ur-muted);">{{ b.user.email }}</div>
+          </td>
+          <td>{{ b.owner.user.full_name }}</td>
+          <td>
+            <div>{{ b.listing_name }}</div>
+            <div style="font-size: 0.78rem; color: var(--ur-muted);">{{ b.listing_type|capitalize }}</div>
+          </td>
+          <td>
+            {{ b.start_date.strftime('%b %d') }} - {{ b.end_date.strftime('%b %d, %Y') }}
+            <div style="font-size: 0.78rem; color: var(--ur-muted);">{{ b.total_days }} day(s)</div>
+          </td>
+          <td><strong style="color: var(--ur-burnt-orange);">{{ format_currency(b.total_amount) }}</strong></td>
+          <td>
+            <span class="badge {% if b.booking_status in ['confirmed', 'completed'] %}badge-approved{% elif b.booking_status == 'active' %}badge-active{% else %}badge-pending{% endif %}">
+              {{ b.booking_status|capitalize }}
+            </span>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Payments & Invoices — Traveler Portal{% endblock %}
+{% block page_title %}Payments & Receipts{% endblock %}
+
+{% block dashboard_content %}
+
+<div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+  <div>
+    <h3 style="font-size: 1.25rem; margin: 0 0 0.3rem;">Payment Ledger</h3>
+    <p style="color: var(--ur-muted); font-size: 0.9rem; margin: 0;">Verified transaction invoices and payment records for your bookings.</p>
+  </div>
+  <div style="font-size: 0.85rem; color: var(--ur-muted);">
+    Powered by Razorpay Test Sandbox
+  </div>
+</div>
+
+<div class="table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Transaction Ref</th>
+        <th>Booking Reference</th>
+        <th>Payment Method</th>
+        <th>Amount Paid</th>
+        <th>Status</th>
+        <th>Payment Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in payments %}
+        <tr>
+          <td><code style="background: var(--ur-ivory); padding: 0.2rem 0.4rem; border-radius: 4px;">{{ p.transaction_reference }}</code></td>
+          <td><strong>{{ p.booking.booking_reference }}</strong></td>
+          <td><span class="badge badge-pickup">{{ p.payment_method|upper }}</span></td>
+          <td><strong>{{ format_currency(p.amount) }}</strong></td>
+          <td>
+            {% if p.payment_status == 'successful' %}
+              <span class="badge badge-approved">Successful</span>
+            {% elif p.payment_status == 'refunded' %}
+              <span class="badge badge-active">Refunded</span>
+            {% else %}
+              <span class="badge badge-pending">{{ p.payment_status|capitalize }}</span>
+            {% endif %}
+          </td>
+          <td>{{ p.payment_date.strftime('%b %d, %Y %I:%M %p') }}</td>
+          <td>
+            <a href="{{ url_for('main.confirmation', ref=p.booking.booking_reference) }}" class="btn btn-outline btn-sm">
+              Invoice
+            </a>
+          </td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="7" style="text-align: center; padding: 3rem 1rem; color: var(--ur-muted);">
+            No transaction records found.
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

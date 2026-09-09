@@ -1,0 +1,209 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Owner Dashboard — UniRent Kerala Host Management{% endblock %}
+{% block page_title %}Host Business Portal{% endblock %}
+
+{% block dashboard_content %}
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-label">Total Properties</span>
+    <span class="stat-value">{{ stats.total_properties }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Fleet Vehicles</span>
+    <span class="stat-value">{{ stats.total_vehicles }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Active Bookings</span>
+    <span class="stat-value" style="color: var(--ur-burnt-orange);">{{ stats.active_bookings }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Total Revenue</span>
+    <span class="stat-value">{{ format_currency(stats.total_revenue) }}</span>
+  </div>
+</div>
+
+<!-- Action Bar -->
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2.5rem; background: var(--ur-white); border: 1px solid var(--ur-border); padding: 1.2rem 1.8rem; border-radius: var(--radius-md);">
+  <div>
+    <h3 style="font-size: 1.2rem; margin:0 0 0.2rem;">{{ owner.business_name or owner.user.full_name }}</h3>
+    <div style="font-size: 0.85rem; color: var(--ur-muted);">
+      Heritage Host Hub • {{ owner.district }}, Kerala • Status: <span class="badge badge-approved">{{ owner.kyc_status }}</span>
+    </div>
+  </div>
+  <div style="display: flex; gap: 0.8rem;">
+    <a href="{{ url_for('owner.add_property') }}" class="btn btn-primary btn-sm">+ Add Property</a>
+    <a href="{{ url_for('owner.add_vehicle') }}" class="btn btn-secondary btn-sm">+ Add Vehicle</a>
+  </div>
+</div>
+
+<!-- My Listings Performance Row -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem;">
+  
+  <!-- Properties Performance -->
+  <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.8rem; box-shadow: var(--shadow-sm);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+      <h3 style="font-size: 1.15rem; margin:0;">Heritage Properties ({{ properties|length }})</h3>
+      <a href="{{ url_for('owner.properties') }}" class="btn btn-outline btn-sm">Manage All →</a>
+    </div>
+
+    {% if properties %}
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        {% for p in properties %}
+          <div style="display: flex; gap: 1rem; align-items: center; padding: 0.8rem; border: 1px solid var(--ur-border-light); border-radius: var(--radius-sm);">
+            <img src="{{ p.featured_image }}" alt="Prop" style="width: 60px; height: 50px; border-radius: 4px; object-fit: cover;">
+            <div style="flex:1;">
+              <strong style="font-size: 0.95rem; color: var(--ur-brown);">{{ p.property_name }}</strong>
+              <div style="font-size: 0.8rem; color: var(--ur-muted);">{{ format_currency(p.price_per_night) }} / night • {{ p.district }}</div>
+            </div>
+            <div>
+              {% if p.approval_status == 'approved' %}
+                <span class="badge badge-approved">Approved</span>
+              {% elif p.approval_status == 'pending' %}
+                <span class="badge badge-pending">Pending Approval</span>
+              {% else %}
+                <span class="badge badge-rejected">Rejected</span>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p style="color: var(--ur-muted); font-size: 0.9rem;">No heritage properties listed yet. Add your first Tharavadu or Villa.</p>
+    {% endif %}
+  </div>
+
+  <!-- Vehicles Performance -->
+  <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.8rem; box-shadow: var(--shadow-sm);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+      <h3 style="font-size: 1.15rem; margin:0;">Rental Fleet ({{ vehicles|length }})</h3>
+      <a href="{{ url_for('owner.vehicles') }}" class="btn btn-outline btn-sm">Manage All →</a>
+    </div>
+
+    {% if vehicles %}
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        {% for v in vehicles %}
+          <div style="display: flex; gap: 1rem; align-items: center; padding: 0.8rem; border: 1px solid var(--ur-border-light); border-radius: var(--radius-sm);">
+            <img src="{{ v.featured_image }}" alt="Veh" style="width: 60px; height: 50px; border-radius: 4px; object-fit: cover;">
+            <div style="flex:1;">
+              <strong style="font-size: 0.95rem; color: var(--ur-brown);">{{ v.vehicle_name }}</strong>
+              <div style="font-size: 0.8rem; color: var(--ur-muted);">{{ format_currency(v.price_per_day) }} / day • {{ v.district }}</div>
+            </div>
+            <div>
+              {% if v.approval_status == 'approved' %}
+                <span class="badge badge-approved">Approved</span>
+              {% elif v.approval_status == 'pending' %}
+                <span class="badge badge-pending">Pending Approval</span>
+              {% else %}
+                <span class="badge badge-rejected">Rejected</span>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p style="color: var(--ur-muted); font-size: 0.9rem;">No rental vehicles added yet. Add a car, motorcycle, or scooter to your fleet.</p>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Recent Guest Bookings Table -->
+<div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.8rem; box-shadow: var(--shadow-sm); margin-bottom: 3rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+    <h3 style="font-size: 1.2rem; margin:0;">Recent Guest Bookings</h3>
+    <a href="{{ url_for('owner.bookings') }}" class="btn btn-outline btn-sm">View All Bookings →</a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Ref</th>
+          <th>Guest</th>
+          <th>Listing</th>
+          <th>Dates</th>
+          <th>Total</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in recent_bookings %}
+          <tr>
+            <td><strong>{{ b.booking_reference }}</strong></td>
+            <td>{{ b.user.full_name }}</td>
+            <td>{{ b.listing_name }}</td>
+            <td>{{ b.start_date.strftime('%b %d') }} - {{ b.end_date.strftime('%b %d, %Y') }}</td>
+            <td><strong>{{ format_currency(b.total_amount) }}</strong></td>
+            <td>
+              {% if b.booking_status == 'confirmed' %}
+                <span class="badge badge-confirmed">Confirmed</span>
+              {% elif b.booking_status == 'active' %}
+                <span class="badge badge-active">Active</span>
+              {% elif b.booking_status == 'completed' %}
+                <span class="badge badge-approved">Completed</span>
+              {% else %}
+                <span class="badge badge-rejected">{{ b.booking_status|capitalize }}</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="6" style="text-align:center; padding: 2rem; color: var(--ur-muted);">No guest bookings received yet.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Open Complaints & Reviews Bottom Grid -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+  
+  <!-- Open Complaints -->
+  <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.8rem;">
+    <h3 style="font-size: 1.15rem; margin-bottom: 1rem;">Guest Complaints Requiring Attention</h3>
+    {% if open_complaints %}
+      {% for c in open_complaints %}
+        <div style="background: var(--ur-ivory); border-left: 4px solid #c65b2d; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+          <div style="display:flex; justify-content:space-between;">
+            <strong style="font-size: 0.88rem;">{{ c.complaint_reference }} — {{ c.category }}</strong>
+            <span class="badge badge-pending">{{ c.status|replace('_', ' ')|capitalize }}</span>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--ur-text); margin: 0.4rem 0;">{{ c.description }}</p>
+          <a href="{{ url_for('owner.complaints') }}" class="btn btn-secondary btn-sm" style="font-size: 0.78rem;">Respond to Guest</a>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div style="color: var(--ur-muted); font-size: 0.9rem; text-align: center; padding: 2rem 0;">
+        ✓ No unresolved complaints on your listings. Excellent host rating!
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Recent Reviews -->
+  <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.8rem;">
+    <h3 style="font-size: 1.15rem; margin-bottom: 1rem;">Recent Traveler Feedback</h3>
+    {% if reviews %}
+      {% for r in reviews %}
+        <div style="margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--ur-border-light);">
+          <div style="display:flex; justify-content:space-between;">
+            <strong style="font-size: 0.88rem;">{{ r.author_name }}</strong>
+            <span style="color: #f59e0b;">{% for i in range(r.rating) %}★{% endfor %}</span>
+          </div>
+          <div style="font-size: 0.85rem; color: var(--ur-text); margin-top: 0.2rem;">"{{ r.review_text[:110] }}..."</div>
+        </div>
+      {% endfor %}
+      <a href="{{ url_for('owner.reviews') }}" style="font-size: 0.85rem; color: var(--ur-burnt-orange); font-weight:600;">View All Reviews →</a>
+    {% else %}
+      <div style="color: var(--ur-muted); font-size: 0.9rem; text-align: center; padding: 2rem 0;">
+        No reviews posted yet.
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+
+{% endblock %}

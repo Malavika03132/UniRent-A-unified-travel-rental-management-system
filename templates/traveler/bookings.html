@@ -1,0 +1,86 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}My Bookings — Traveler Sanctuary{% endblock %}
+{% block page_title %}My Bookings{% endblock %}
+
+{% block dashboard_content %}
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+  <!-- Filter Tabs -->
+  <div class="auth-tabs" style="width: auto; margin: 0;">
+    <a href="{{ url_for('traveler.bookings', status='all') }}" class="auth-tab {% if current_status == 'all' %}active{% endif %}">All ({{ bookings|length }})</a>
+    <a href="{{ url_for('traveler.bookings', status='confirmed') }}" class="auth-tab {% if current_status == 'confirmed' %}active{% endif %}">Confirmed</a>
+    <a href="{{ url_for('traveler.bookings', status='active') }}" class="auth-tab {% if current_status == 'active' %}active{% endif %}">Active</a>
+    <a href="{{ url_for('traveler.bookings', status='completed') }}" class="auth-tab {% if current_status == 'completed' %}active{% endif %}">Completed</a>
+  </div>
+
+  <a href="{{ url_for('main.stays') }}" class="btn btn-primary btn-sm">+ Book Another Stay</a>
+</div>
+
+<div class="table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Reference</th>
+        <th>Listing Details</th>
+        <th>Category</th>
+        <th>Dates & Duration</th>
+        <th>Total Amount</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in bookings %}
+        <tr>
+          <td><strong style="font-family: monospace;">{{ b.booking_reference }}</strong></td>
+          <td>
+            <div style="display: flex; gap: 0.8rem; align-items: center;">
+              <img src="{{ b.listing_image }}" alt="Thumb" style="width: 48px; height: 38px; border-radius: 4px; object-fit: cover;">
+              <div>
+                <strong style="color: var(--ur-brown);">{{ b.listing_name }}</strong>
+                <div style="font-size: 0.78rem; color: var(--ur-muted);">Host: {{ b.owner.user.full_name }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="badge badge-pickup">{{ b.listing_type|capitalize }}</span>
+          </td>
+          <td>
+            {{ b.start_date.strftime('%b %d') }} → {{ b.end_date.strftime('%b %d, %Y') }}
+            <div style="font-size: 0.78rem; color: var(--ur-muted);">{{ b.total_days }} day(s)</div>
+          </td>
+          <td><strong>{{ format_currency(b.total_amount) }}</strong></td>
+          <td>
+            {% if b.booking_status == 'confirmed' %}
+              <span class="badge badge-confirmed">Confirmed</span>
+            {% elif b.booking_status == 'active' %}
+              <span class="badge badge-active">Active</span>
+            {% elif b.booking_status == 'completed' %}
+              <span class="badge badge-approved">Completed</span>
+            {% else %}
+              <span class="badge badge-rejected">{{ b.booking_status|capitalize }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <div style="display:flex; gap:0.4rem;">
+              <a href="{{ url_for('main.confirmation', ref=b.booking_reference) }}" class="btn btn-outline btn-sm">Receipt</a>
+              {% if b.booking_status == 'completed' and not b.review %}
+                <a href="{{ url_for('traveler.reviews') }}" class="btn btn-secondary btn-sm">Review</a>
+              {% endif %}
+              <a href="{{ url_for('traveler.complaints') }}" class="btn btn-outline btn-sm" title="Report issue">Support</a>
+            </div>
+          </td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="7" style="text-align: center; padding: 3rem 1rem; color: var(--ur-muted);">
+            No bookings found for this category filter.
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

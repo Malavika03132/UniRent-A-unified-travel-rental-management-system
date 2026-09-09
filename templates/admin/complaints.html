@@ -1,0 +1,91 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Complaints Arbitration — Admin Portal{% endblock %}
+{% block page_title %}Platform Complaints & Arbitration{% endblock %}
+
+{% block dashboard_content %}
+
+<div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.5rem 2rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+  <div>
+    <h3 style="font-size: 1.25rem; margin: 0 0 0.3rem;">Dispute Arbitration Center ({{ complaints|length }})</h3>
+    <p style="color: var(--ur-muted); font-size: 0.88rem; margin: 0;">Arbitrate and resolve traveler and host grievances with binding administrative decisions.</p>
+  </div>
+</div>
+
+{% if complaints %}
+  <div style="display: flex; flex-direction: column; gap: 1.8rem;">
+    {% for c in complaints %}
+      <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 2rem; box-shadow: var(--shadow-sm);">
+        
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+          <div>
+            <span class="badge badge-pickup" style="margin-bottom: 0.3rem;">{{ c.category }}</span>
+            <h4 style="font-size: 1.2rem; margin: 0.2rem 0;">Ticket Ref: {{ c.complaint_reference }}</h4>
+            <div style="font-size: 0.85rem; color: var(--ur-muted);">
+              Traveler: <strong>{{ c.user.full_name }}</strong> ({{ c.user.email }}) • Host: <strong>{{ c.owner.user.full_name }}</strong> • Booking Ref: {{ c.booking.booking_reference }}
+            </div>
+          </div>
+          <div>
+            <span class="badge {% if c.status == 'resolved' %}badge-approved{% elif c.status == 'owner_responded' %}badge-active{% else %}badge-pending{% endif %}" style="font-size: 0.85rem; padding: 0.35rem 0.8rem;">
+              {{ c.status|replace('_', ' ')|capitalize }}
+            </span>
+          </div>
+        </div>
+
+        <div style="background: var(--ur-light-ivory); border: 1px solid var(--ur-border-light); padding: 1.2rem; border-radius: var(--radius-sm); margin-bottom: 1rem; font-size: 0.95rem;">
+          <strong>Traveler Statement:</strong><br>
+          {{ c.description }}
+        </div>
+
+        {% if c.owner_response %}
+          <div style="background: #fcf9f5; border-left: 4px solid var(--ur-burnt-orange); padding: 1rem 1.2rem; border-radius: 4px; margin-bottom: 1rem; font-size: 0.9rem;">
+            <div style="font-weight: 700; color: var(--ur-brown); font-size: 0.82rem; text-transform: uppercase; margin-bottom: 0.2rem;">
+              Host Explanation:
+            </div>
+            <div>{{ c.owner_response }}</div>
+          </div>
+        {% endif %}
+
+        {% if c.admin_response %}
+          <div style="background: #e8f4fd; border-left: 4px solid #1976d2; padding: 1rem 1.2rem; border-radius: 4px; margin-bottom: 1.2rem; font-size: 0.9rem;">
+            <div style="font-weight: 700; color: #1565c0; font-size: 0.82rem; text-transform: uppercase; margin-bottom: 0.2rem;">
+              Admin Official Ruling:
+            </div>
+            <div>{{ c.admin_response }}</div>
+          </div>
+        {% endif %}
+
+        <!-- Admin Action Form -->
+        <div style="background: var(--ur-ivory); padding: 1.2rem; border-radius: var(--radius-sm); border: 1px solid var(--ur-border);">
+          <form action="{{ url_for('admin.complaints') }}" method="POST">
+            <input type="hidden" name="complaint_id" value="{{ c.complaint_id }}">
+            
+            <div class="form-group">
+              <label for="admin_note_{{ c.complaint_id }}" style="font-size: 0.85rem;">Official Administrative Finding / Concierge Note</label>
+              <textarea id="admin_note_{{ c.complaint_id }}" name="admin_response" rows="2" class="form-control" placeholder="Enter findings, compensation rulings, or mediation notes..." required>{{ c.admin_response or '' }}</textarea>
+            </div>
+
+            <div style="display: flex; gap: 0.8rem;">
+              <button type="submit" name="action" value="resolve" class="btn btn-primary btn-sm" style="background-color: #1e7e34; border-color: #1e7e34;">
+                ✓ Resolve Complaint
+              </button>
+              <button type="submit" name="action" value="review" class="btn btn-secondary btn-sm">
+                🔍 Mark Under Review
+              </button>
+              <button type="submit" name="action" value="reject" class="btn btn-outline btn-sm" style="color: #c5221f;">
+                ✕ Reject Complaint
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 3rem; text-align: center; color: var(--ur-muted);">
+    No open complaints requiring arbitration.
+  </div>
+{% endif %}
+
+{% endblock %}

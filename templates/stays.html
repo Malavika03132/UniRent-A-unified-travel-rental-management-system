@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Heritage Stays in Kerala (Ernakulam & Thrissur) — UniRent{% endblock %}
+
+{% block content %}
+
+<!-- Header Banner -->
+<div style="background-color: var(--ur-brown); color: var(--ur-ivory); padding: 3.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+  <div class="container">
+    <span style="color: #ffaa85; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;">Living Architecture</span>
+    <h1 style="color: var(--ur-white); font-size: 2.5rem; margin: 0.4rem 0 0.8rem;">Kerala Heritage Stays & Villas</h1>
+    <p style="color: #d8cec1; max-width: 680px; font-size: 1.05rem; margin: 0;">
+      Centuries-old Tharavadus, Dutch colonial manors, and riverside Nalukettu residences across Ernakulam and Thrissur.
+    </p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="catalog-layout">
+    
+    <!-- Filter Sidebar -->
+    <aside>
+      <div class="filter-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+          <h3 style="font-size: 1.2rem; margin:0;">Filters</h3>
+          <a href="{{ url_for('main.stays') }}" style="font-size: 0.82rem; color: var(--ur-burnt-orange);">Reset All</a>
+        </div>
+
+        <form action="{{ url_for('main.stays') }}" method="GET">
+          
+          <!-- District Filter -->
+          <div class="filter-group">
+            <div class="filter-title">Kerala District</div>
+            <div class="filter-options">
+              <label>
+                <input type="radio" name="district" value="" {% if not selected_district %}checked{% endif %} onchange="this.form.submit()"> All Districts
+              </label>
+              <label>
+                <input type="radio" name="district" value="Ernakulam" {% if selected_district == 'Ernakulam' %}checked{% endif %} onchange="this.form.submit()"> Ernakulam (Kochi / Aluva / Cherai)
+              </label>
+              <label>
+                <input type="radio" name="district" value="Thrissur" {% if selected_district == 'Thrissur' %}checked{% endif %} onchange="this.form.submit()"> Thrissur (Cultural Capital)
+              </label>
+            </div>
+          </div>
+
+          <!-- Property Type Filter -->
+          <div class="filter-group">
+            <div class="filter-title">Property Architecture</div>
+            <div class="filter-options">
+              <label>
+                <input type="radio" name="type" value="" {% if not selected_type %}checked{% endif %} onchange="this.form.submit()"> All Architecture
+              </label>
+              <label>
+                <input type="radio" name="type" value="Traditional Kerala House" {% if selected_type == 'Traditional Kerala House' %}checked{% endif %} onchange="this.form.submit()"> Traditional Kerala Tharavadu
+              </label>
+              <label>
+                <input type="radio" name="type" value="Heritage Villa" {% if selected_type == 'Heritage Villa' %}checked{% endif %} onchange="this.form.submit()"> Heritage Villa & Manor
+              </label>
+              <label>
+                <input type="radio" name="type" value="Heritage Stay" {% if selected_type == 'Heritage Stay' %}checked{% endif %} onchange="this.form.submit()"> Coastal & Riverfront Retreat
+              </label>
+            </div>
+          </div>
+
+          <!-- Guest Capacity -->
+          <div class="filter-group">
+            <div class="filter-title">Guest Capacity</div>
+            <select name="guests" class="form-control" style="padding: 0.5rem;" onchange="this.form.submit()">
+              <option value="">Any Capacity</option>
+              <option value="2" {% if guests == 2 %}selected{% endif %}>2+ Guests</option>
+              <option value="4" {% if guests == 4 %}selected{% endif %}>4+ Guests</option>
+              <option value="6" {% if guests == 6 %}selected{% endif %}>6+ Guests</option>
+            </select>
+          </div>
+
+          <!-- Price Range Filter -->
+          <div class="filter-group">
+            <div class="filter-title">Max Price (per night)</div>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <input type="number" name="max_price" value="{{ max_price or '' }}" placeholder="₹ Max" class="form-control" style="padding: 0.5rem;">
+              <button type="submit" class="btn btn-secondary btn-sm">Apply</button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </aside>
+
+    <!-- Listings Grid Content -->
+    <main>
+      <!-- Sorting & Counter Bar -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--ur-white); border: 1px solid var(--ur-border); padding: 0.9rem 1.4rem; border-radius: var(--radius-sm);">
+        <div style="font-size: 0.95rem; color: var(--ur-brown);">
+          Showing <strong>{{ stays|length }}</strong> verified heritage accommodations
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <label for="sort_select" style="font-size: 0.88rem; color: var(--ur-muted); font-weight: 500;">Sort By:</label>
+          <select id="sort_select" class="form-control" style="padding: 0.4rem 0.8rem; width: auto; font-size: 0.88rem;" onchange="window.location.href=this.value">
+            <option value="{{ url_for('main.stays', district=selected_district, type=selected_type, max_price=max_price, guests=guests, sort='newest') }}" {% if sort_by == 'newest' %}selected{% endif %}>Newest</option>
+            <option value="{{ url_for('main.stays', district=selected_district, type=selected_type, max_price=max_price, guests=guests, sort='price_asc') }}" {% if sort_by == 'price_asc' %}selected{% endif %}>Price: Low → High</option>
+            <option value="{{ url_for('main.stays', district=selected_district, type=selected_type, max_price=max_price, guests=guests, sort='price_desc') }}" {% if sort_by == 'price_desc' %}selected{% endif %}>Price: High → Low</option>
+            <option value="{{ url_for('main.stays', district=selected_district, type=selected_type, max_price=max_price, guests=guests, sort='rating') }}" {% if sort_by == 'rating' %}selected{% endif %}>Highest Rated</option>
+          </select>
+        </div>
+      </div>
+
+      {% if stays %}
+        <div class="grid-cards">
+          {% for stay in stays %}
+            <div class="card">
+              <div class="card-img-wrap">
+                <img src="{{ stay.featured_image }}" alt="{{ stay.property_name }}" loading="lazy">
+                <div class="card-top-badges">
+                  <span class="card-district-tag">📍 {{ stay.district }}</span>
+                  <span class="card-rating-tag">★ {{ stay.average_rating }}</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="card-meta-type">{{ stay.property_type }}</div>
+                <h3 class="card-title">
+                  <a href="{{ url_for('main.stay_details', property_id=stay.property_id) }}">{{ stay.property_name }}</a>
+                </h3>
+                <div class="card-location">
+                  <span>{{ stay.address }}</span>
+                </div>
+                <p class="card-desc">{{ stay.description }}</p>
+                
+                <div class="card-specs-row">
+                  <span>👥 Up to {{ stay.guest_capacity }} Guests</span>
+                  <span>🛏️ {{ stay.bedrooms }} BR</span>
+                  <span>🚿 {{ stay.bathrooms }} BA</span>
+                </div>
+
+                <div class="card-footer">
+                  <div class="card-price">
+                    <span class="price-val">{{ format_currency(stay.price_per_night) }}</span>
+                    <span class="price-period">per night</span>
+                  </div>
+                  <div style="display: flex; gap: 0.5rem;">
+                    <a href="{{ url_for('main.stay_details', property_id=stay.property_id) }}" class="btn btn-outline btn-sm">View Details</a>
+                    <a href="{{ url_for('main.booking', type='property', id=stay.property_id) }}" class="btn btn-primary btn-sm">Book Now</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="background-color: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 4rem 2rem; text-align: center;">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">🏡</div>
+          <h3>No Heritage Stays Found Matching Filters</h3>
+          <p style="color: var(--ur-muted); max-width: 450px; margin: 0.5rem auto 1.5rem;">Try clearing your filters or selecting another Kerala district.</p>
+          <a href="{{ url_for('main.stays') }}" class="btn btn-primary">Reset Filters</a>
+        </div>
+      {% endif %}
+
+    </main>
+
+  </div>
+</div>
+
+{% endblock %}

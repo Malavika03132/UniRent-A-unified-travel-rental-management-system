@@ -1,0 +1,63 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}All Properties — Admin Portal{% endblock %}
+{% block page_title %}Platform Heritage Stays Directory{% endblock %}
+
+{% block dashboard_content %}
+
+<div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.5rem 2rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+  <div>
+    <h3 style="font-size: 1.25rem; margin: 0 0 0.3rem;">All Heritage Stays ({{ properties|length }})</h3>
+    <p style="color: var(--ur-muted); font-size: 0.88rem; margin: 0;">Comprehensive directory of verified and pending properties across Kerala.</p>
+  </div>
+  <a href="{{ url_for('admin.approvals') }}" class="btn btn-secondary btn-sm">Approvals Queue</a>
+</div>
+
+<div class="table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Host</th>
+        <th>Architecture Type</th>
+        <th>District</th>
+        <th>Price / Night</th>
+        <th>Approval</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in properties %}
+        <tr>
+          <td>
+            <div style="display: flex; gap: 0.8rem; align-items: center;">
+              <img src="{{ p.featured_image }}" alt="Thumb" style="width: 50px; height: 40px; border-radius: 4px; object-fit: cover;">
+              <div>
+                <strong>{{ p.property_name }}</strong>
+                <div style="font-size: 0.78rem; color: var(--ur-muted);">★ {{ p.average_rating }}</div>
+              </div>
+            </div>
+          </td>
+          <td>{{ p.owner.user.full_name }}</td>
+          <td>{{ p.property_type }}</td>
+          <td><strong>{{ p.district }}</strong></td>
+          <td>{{ format_currency(p.price_per_night) }}</td>
+          <td>
+            {% if p.approval_status == 'approved' %}
+              <span class="badge badge-approved">Approved</span>
+            {% elif p.approval_status == 'pending' %}
+              <span class="badge badge-pending">Pending</span>
+            {% else %}
+              <span class="badge badge-rejected">Rejected</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{{ url_for('main.stay_details', property_id=p.property_id) }}" class="btn btn-outline btn-sm" target="_blank">View</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

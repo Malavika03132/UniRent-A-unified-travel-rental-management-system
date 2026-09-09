@@ -1,0 +1,56 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Payments & Transactions — Admin Portal{% endblock %}
+{% block page_title %}Financial Operations & Escrow{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-label">Total Payment Volume</span>
+    <span class="stat-value" style="color: var(--ur-burnt-orange);">{{ format_currency(total_volume) }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Platform Take Rate (10%)</span>
+    <span class="stat-value">{{ format_currency(total_volume * 0.10) }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Host Disbursements (90%)</span>
+    <span class="stat-value">{{ format_currency(total_volume * 0.90) }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Gateway Status</span>
+    <span class="stat-value" style="font-size:1.3rem; color:#1e7e34;">Razorpay Test Active</span>
+  </div>
+</div>
+
+<div class="table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Transaction ID</th>
+        <th>Booking Reference</th>
+        <th>Payment Method</th>
+        <th>Amount</th>
+        <th>Gateway Status</th>
+        <th>Timestamp</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in payments %}
+        <tr>
+          <td><code style="background: var(--ur-ivory); padding: 0.2rem 0.4rem; border-radius: 4px;">{{ p.transaction_reference }}</code></td>
+          <td><strong>{{ p.booking.booking_reference }}</strong></td>
+          <td><span class="badge badge-pickup">{{ p.payment_method|upper }}</span></td>
+          <td><strong>{{ format_currency(p.amount) }}</strong></td>
+          <td>
+            <span class="badge badge-approved">{{ p.payment_status|capitalize }}</span>
+          </td>
+          <td>{{ p.payment_date.strftime('%b %d, %Y %I:%M %p') }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

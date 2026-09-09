@@ -1,0 +1,99 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}My Reviews — Traveler Portal{% endblock %}
+{% block page_title %}Verified Reviews{% endblock %}
+
+{% block dashboard_content %}
+
+<div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2.5rem;">
+  
+  <!-- Left Side: My Submitted Reviews -->
+  <div>
+    <h3 style="font-size: 1.25rem; margin-bottom: 1.2rem;">Reviews You've Shared</h3>
+
+    {% if reviews %}
+      <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+        {% for r in reviews %}
+          <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.6rem; box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.6rem;">
+              <div>
+                <span class="badge badge-delivery" style="margin-bottom: 0.3rem;">{{ r.listing_type|capitalize }}</span>
+                <h4 style="font-size: 1.1rem; margin: 0.2rem 0 0;">{{ r.property.property_name if r.property else r.vehicle.vehicle_name }}</h4>
+              </div>
+              <div style="color: #f59e0b; font-size: 1.1rem;">
+                {% for i in range(r.rating) %}★{% endfor %}
+              </div>
+            </div>
+
+            {% if r.review_title %}
+              <h5 style="font-size: 0.95rem; margin-bottom: 0.4rem; color: var(--ur-brown);">{{ r.review_title }}</h5>
+            {% endif %}
+
+            <p style="font-size: 0.92rem; color: var(--ur-text); margin-bottom: 1rem;">{{ r.review_text }}</p>
+
+            <div style="font-size: 0.78rem; color: var(--ur-muted); border-top: 1px solid var(--ur-border-light); padding-top: 0.6rem;">
+              Published on {{ r.created_at.strftime('%B %d, %Y') }} • Booking Ref: {{ r.booking.booking_reference }}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 3rem 2rem; text-align: center; color: var(--ur-muted);">
+        <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">⭐</div>
+        <h4>No Reviews Submitted Yet</h4>
+        <p style="font-size: 0.9rem; margin-top: 0.4rem;">Once you complete a heritage stay or vehicle rental, submit your feedback here to guide fellow travelers.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Right Side: Submit Review Form (for completed bookings) -->
+  <div>
+    <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 2rem; box-shadow: var(--shadow-sm); position: sticky; top: calc(var(--header-height) + 1.5rem);">
+      <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Write a Review</h3>
+      <p style="color: var(--ur-muted); font-size: 0.88rem; margin-bottom: 1.5rem;">Only completed stays or rentals are eligible for authentic verified review submission.</p>
+
+      {% if eligible_bookings %}
+        <form action="{{ url_for('traveler.reviews') }}" method="POST">
+          <div class="form-group">
+            <label for="review_booking_id">Select Completed Trip</label>
+            <select id="review_booking_id" name="booking_id" class="form-control" required>
+              {% for b in eligible_bookings %}
+                <option value="{{ b.booking_id }}">{{ b.listing_name }} ({{ b.booking_reference }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="review_rating">Rating</label>
+            <select id="review_rating" name="rating" class="form-control" required>
+              <option value="5">★★★★★ — Exceptional 5/5</option>
+              <option value="4">★★★★☆ — Very Good 4/5</option>
+              <option value="3">★★★☆☆ — Average 3/5</option>
+              <option value="2">★★☆☆☆ — Poor 2/5</option>
+              <option value="1">★☆☆☆☆ — Terrible 1/5</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="review_title">Headline</label>
+            <input type="text" id="review_title" name="review_title" class="form-control" placeholder="e.g. Unforgettable Monsoon Evening in Aluva" required>
+          </div>
+
+          <div class="form-group">
+            <label for="review_text">Written Review</label>
+            <textarea id="review_text" name="review_text" rows="4" class="form-control" placeholder="Describe your experience with the host, property ambiance, or vehicle condition..." required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">Publish Verified Review</button>
+        </form>
+      {% else %}
+        <div style="background: var(--ur-ivory); border: 1px solid var(--ur-border); border-radius: var(--radius-sm); padding: 1.5rem; text-align: center; font-size: 0.88rem; color: var(--ur-muted);">
+          ℹ️ You currently have no unreviewed completed bookings. All previous bookings have already been reviewed.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Booking Details — UniRent Kerala{% endblock %}
+
+{% block content %}
+
+<div class="container" style="padding: 3rem 0 5rem;">
+  
+  <div style="max-width: 900px; margin: 0 auto;">
+    
+    <!-- Stepper Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; position: relative;">
+      <div style="text-align: center; flex: 1;">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--ur-burnt-orange); color: #fff; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.4rem; font-weight: 700;">1</div>
+        <div style="font-size: 0.85rem; font-weight: 600; color: var(--ur-brown);">Reservation Details</div>
+      </div>
+      <div style="height: 2px; background: var(--ur-border); flex: 1; margin: 0 1rem -1rem;"></div>
+      <div style="text-align: center; flex: 1;">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--ur-ivory); border: 1px solid var(--ur-border); color: var(--ur-muted); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.4rem; font-weight: 700;">2</div>
+        <div style="font-size: 0.85rem; color: var(--ur-muted);">Payment Gateway</div>
+      </div>
+      <div style="height: 2px; background: var(--ur-border); flex: 1; margin: 0 1rem -1rem;"></div>
+      <div style="text-align: center; flex: 1;">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--ur-ivory); border: 1px solid var(--ur-border); color: var(--ur-muted); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.4rem; font-weight: 700;">3</div>
+        <div style="font-size: 0.85rem; color: var(--ur-muted);">Confirmation</div>
+      </div>
+    </div>
+
+    <!-- Booking Form & Summary Grid -->
+    <div style="display: grid; grid-template-columns: 1.3fr 1fr; gap: 2.5rem;">
+      
+      <!-- Left Side: Form Details -->
+      <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 2.2rem; box-shadow: var(--shadow-sm);">
+        <h3 style="font-size: 1.4rem; margin-bottom: 1.5rem;">Traveler & Schedule Information</h3>
+
+        <form action="/api/bookings" method="POST" id="booking_checkout_form">
+          <input type="hidden" name="listing_type" value="{{ listing_type }}">
+          <input type="hidden" name="item_id" value="{{ item.property_id if listing_type == 'property' else item.vehicle_id }}">
+          <input type="hidden" id="listing_daily_rate" value="{{ item.price_per_night if listing_type == 'property' else item.price_per_day }}">
+
+          {% if not current_user %}
+            <div style="background: #fff8eb; border: 1px solid #ffd480; padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem; font-size: 0.9rem;">
+              ⚠️ Please <a href="{{ url_for('auth.login', next=request.url) }}" style="font-weight: 700;">Log In</a> or <a href="{{ url_for('auth.register') }}" style="font-weight: 700;">Register</a> to complete your reservation.
+            </div>
+          {% endif %}
+
+          <div class="form-group">
+            <label for="traveler_name">Guest / Driver Full Name</label>
+            <input type="text" id="traveler_name" class="form-control" value="{{ current_user.full_name if current_user else '' }}" placeholder="Legal Full Name" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label for="traveler_phone">Contact Phone</label>
+              <input type="tel" id="traveler_phone" class="form-control" value="{{ current_user.phone if current_user else '' }}" placeholder="+91 98470 00000" required>
+            </div>
+            <div class="form-group">
+              <label for="traveler_email">Email</label>
+              <input type="email" id="traveler_email" class="form-control" value="{{ current_user.email if current_user else '' }}" placeholder="email@domain.com" required>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label for="booking_start_date">{% if listing_type == 'property' %}Check-in Date{% else %}Pickup Date{% endif %}</label>
+              <input type="date" id="booking_start_date" name="start_date" class="form-control" value="{{ start_date or '' }}" required>
+            </div>
+            <div class="form-group">
+              <label for="booking_end_date">{% if listing_type == 'property' %}Check-out Date{% else %}Return Date{% endif %}</label>
+              <input type="date" id="booking_end_date" name="end_date" class="form-control" value="{{ end_date or '' }}" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="special_requests">Special Requests / Dietary / Timing</label>
+            <textarea id="special_requests" name="special_requests" rows="3" class="form-control" placeholder="Arrival time, sadhya meal preference, or helmet sizes..."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg" {% if not current_user %}disabled{% endif %}>
+            Proceed to Secure Payment
+          </button>
+        </form>
+      </div>
+
+      <!-- Right Side: Order Summary Card -->
+      <div>
+        <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.8rem; box-shadow: var(--shadow-sm); position: sticky; top: calc(var(--header-height) + 1.5rem);">
+          <div style="display: flex; gap: 1rem; margin-bottom: 1.2rem; padding-bottom: 1.2rem; border-bottom: 1px solid var(--ur-border-light);">
+            <div style="width: 80px; height: 80px; border-radius: var(--radius-sm); overflow: hidden; flex-shrink: 0;">
+              <img src="{{ item.featured_image }}" alt="Listing" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+            <div>
+              <span class="badge badge-delivery" style="font-size:0.75rem;">{{ listing_type|capitalize }}</span>
+              <h4 style="font-size: 1.05rem; margin: 0.3rem 0 0.2rem;">
+                {{ item.property_name if listing_type == 'property' else item.vehicle_name }}
+              </h4>
+              <div style="font-size: 0.82rem; color: var(--ur-muted);">
+                📍 {{ item.district }}, Kerala
+              </div>
+            </div>
+          </div>
+
+          <h4 style="font-size: 1rem; margin-bottom: 1rem;">Price Summary</h4>
+
+          <div class="pricing-breakdown" style="margin:0 0 1.2rem; padding: 0 0 1.2rem;">
+            <div class="price-row">
+              <span>Rate per {% if listing_type == 'property' %}night{% else %}day{% endif %}</span>
+              <span>{{ format_currency(item.price_per_night if listing_type == 'property' else item.price_per_day) }}</span>
+            </div>
+            <div class="price-row">
+              <span>Duration</span>
+              <span id="display_days">1</span> {% if listing_type == 'property' %}night(s){% else %}day(s){% endif %}
+            </div>
+            <div class="price-row">
+              <span>Subtotal</span>
+              <span id="display_subtotal">{{ format_currency(item.price_per_night if listing_type == 'property' else item.price_per_day) }}</span>
+            </div>
+            <div class="price-row">
+              <span>Platform Service Fee (5%)</span>
+              <span id="display_service_fee">
+                {{ format_currency((item.price_per_night if listing_type == 'property' else item.price_per_day) * 0.05) }}
+              </span>
+            </div>
+            <div class="price-row">
+              <span>Taxes & GST (12%)</span>
+              <span id="display_tax">
+                {{ format_currency((item.price_per_night if listing_type == 'property' else item.price_per_day) * 0.12) }}
+              </span>
+            </div>
+            <div class="price-row total">
+              <span>Total Payable</span>
+              <span id="display_total">
+                {{ format_currency((item.price_per_night if listing_type == 'property' else item.price_per_day) * 1.17) }}
+              </span>
+            </div>
+          </div>
+
+          <div style="font-size: 0.8rem; color: var(--ur-muted); line-height: 1.5;">
+            🛡️ Free cancellation up to 48 hours prior to check-in/pickup time.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+<script>
+  // Handle booking form submission via API
+  const form = document.getElementById('booking_checkout_form');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+
+      try {
+        const res = await fetch('/api/bookings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (result.success) {
+          window.location.href = `/payment?booking_id=${result.booking_id}&ref=${result.booking_reference}`;
+        } else {
+          alert(result.error || 'Failed to initialize booking.');
+        }
+      } catch (err) {
+        alert('Network error while processing booking.');
+      }
+    });
+  }
+</script>
+{% endblock %}

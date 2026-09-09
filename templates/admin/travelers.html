@@ -1,0 +1,58 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Travelers Directory — Admin Portal{% endblock %}
+{% block page_title %}Traveler Community Management{% endblock %}
+
+{% block dashboard_content %}
+
+<div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.5rem 2rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+  <div>
+    <h3 style="font-size: 1.25rem; margin: 0 0 0.3rem;">Registered Travelers ({{ travelers|length }})</h3>
+    <p style="color: var(--ur-muted); font-size: 0.88rem; margin: 0;">Monitor traveler profiles, booking activity, and account status.</p>
+  </div>
+</div>
+
+<div class="table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Traveler Name</th>
+        <th>Email Address</th>
+        <th>Contact Phone</th>
+        <th>Bookings Count</th>
+        <th>Status</th>
+        <th>Joined Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in travelers %}
+        <tr>
+          <td>
+            <div style="display: flex; gap: 0.8rem; align-items: center;">
+              <div class="user-avatar-circle" style="width: 38px; height: 38px; font-size: 0.95rem;">
+                {{ t.full_name[:1] }}
+              </div>
+              <div>
+                <strong>{{ t.full_name }}</strong>
+                <div style="font-size: 0.78rem; color: var(--ur-muted);">User ID: #{{ t.user_id }}</div>
+              </div>
+            </div>
+          </td>
+          <td>{{ t.email }}</td>
+          <td>{{ t.phone }}</td>
+          <td>
+            <span class="badge badge-pickup">{{ t.bookings.count() }} Booking(s)</span>
+          </td>
+          <td>
+            <span class="badge {% if t.status == 'active' %}badge-approved{% else %}badge-rejected{% endif %}">
+              {{ t.status|capitalize }}
+            </span>
+          </td>
+          <td>{{ t.created_at.strftime('%b %d, %Y') if t.created_at else '2026' }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

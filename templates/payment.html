@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Secure Payment — UniRent Kerala Gateway{% endblock %}
+
+{% block content %}
+
+<div class="container" style="padding: 3rem 0 5rem;">
+  
+  <div style="max-width: 800px; margin: 0 auto;">
+    
+    <!-- Stepper Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+      <div style="text-align: center; flex: 1;">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--status-approved-bg); color: var(--status-approved-text); border: 1px solid #c3e6cb; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.4rem; font-weight: 700;">✓</div>
+        <div style="font-size: 0.85rem; color: var(--ur-muted);">Reservation Details</div>
+      </div>
+      <div style="height: 2px; background: var(--ur-burnt-orange); flex: 1; margin: 0 1rem -1rem;"></div>
+      <div style="text-align: center; flex: 1;">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--ur-burnt-orange); color: #fff; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.4rem; font-weight: 700;">2</div>
+        <div style="font-size: 0.85rem; font-weight: 600; color: var(--ur-brown);">Payment Gateway</div>
+      </div>
+      <div style="height: 2px; background: var(--ur-border); flex: 1; margin: 0 1rem -1rem;"></div>
+      <div style="text-align: center; flex: 1;">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--ur-ivory); border: 1px solid var(--ur-border); color: var(--ur-muted); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.4rem; font-weight: 700;">3</div>
+        <div style="font-size: 0.85rem; color: var(--ur-muted);">Confirmation</div>
+      </div>
+    </div>
+
+    <!-- Razorpay Demo Payment Card -->
+    <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); overflow: hidden;">
+      
+      <div style="background: var(--ur-brown); color: var(--ur-ivory); padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <div style="font-size: 0.8rem; color: #ffaa85; font-weight: 700; text-transform: uppercase;">Razorpay Sandbox Simulator</div>
+          <h3 style="color: #fff; font-size: 1.3rem; margin: 0.2rem 0 0;">UniRent Kerala Escrow</h3>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 0.78rem; color: #d8cec1;">Amount to Pay</div>
+          <div style="font-size: 1.5rem; font-weight: 700; color: #ffaa85;">{{ format_currency(booking.total_amount) }}</div>
+        </div>
+      </div>
+
+      <div style="padding: 2.2rem;">
+        <div style="display: flex; gap: 1rem; align-items: center; background: var(--ur-ivory); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 2rem; border: 1px solid var(--ur-border);">
+          <div style="font-size: 1.8rem;">🏨</div>
+          <div>
+            <strong>{{ booking.listing_name }}</strong>
+            <div style="font-size: 0.85rem; color: var(--ur-muted);">Ref: {{ booking.booking_reference }} • {{ booking.start_date.strftime('%b %d') }} to {{ booking.end_date.strftime('%b %d, %Y') }} ({{ booking.total_days }} days)</div>
+          </div>
+        </div>
+
+        <form id="razorpay_demo_form">
+          <input type="hidden" id="hidden_booking_ref" value="{{ booking.booking_reference }}">
+
+          <!-- Payment Options Tabs -->
+          <div style="margin-bottom: 1.5rem;">
+            <label style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--ur-muted); margin-bottom: 0.6rem; display: block;">Select Payment Method</label>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+              <label style="border: 2px solid var(--ur-burnt-orange); border-radius: var(--radius-sm); padding: 1rem; text-align: center; cursor: pointer; background: #fffdf8;">
+                <input type="radio" name="pay_method" value="card" checked style="display:none;">
+                <div style="font-size: 1.4rem; margin-bottom: 0.3rem;">💳</div>
+                <strong style="font-size: 0.9rem; color: var(--ur-burnt-orange);">Credit / Debit Card</strong>
+              </label>
+              <label style="border: 1px solid var(--ur-border); border-radius: var(--radius-sm); padding: 1rem; text-align: center; cursor: pointer; background: var(--ur-white);">
+                <input type="radio" name="pay_method" value="upi" style="display:none;">
+                <div style="font-size: 1.4rem; margin-bottom: 0.3rem;">📱</div>
+                <strong style="font-size: 0.9rem; color: var(--ur-text);">UPI / QR Code</strong>
+              </label>
+              <label style="border: 1px solid var(--ur-border); border-radius: var(--radius-sm); padding: 1rem; text-align: center; cursor: pointer; background: var(--ur-white);">
+                <input type="radio" name="pay_method" value="netbanking" style="display:none;">
+                <div style="font-size: 1.4rem; margin-bottom: 0.3rem;">🏦</div>
+                <strong style="font-size: 0.9rem; color: var(--ur-text);">Net Banking</strong>
+              </label>
+            </div>
+          </div>
+
+          <!-- Card Simulation Fields -->
+          <div class="form-group">
+            <label for="card_num">Test Card Number</label>
+            <input type="text" id="card_num" class="form-control" value="4111 •••• •••• 1111" readonly>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label for="card_exp">Expiry Date</label>
+              <input type="text" id="card_exp" class="form-control" value="12 / 28" readonly>
+            </div>
+            <div class="form-group">
+              <label for="card_cvv">CVV</label>
+              <input type="password" id="card_cvv" class="form-control" value="888" readonly>
+            </div>
+          </div>
+
+          <div style="background: #e8f4fd; border: 1px solid #b8daff; padding: 0.9rem 1.2rem; border-radius: var(--radius-sm); font-size: 0.85rem; color: #1976d2; margin-bottom: 1.8rem;">
+            ℹ️ Demo Mode: Real payment credentials are not required. Clicking 'Complete Payment' simulates an approved transaction via the Razorpay test harness.
+          </div>
+
+          <button type="submit" id="rzp_pay_submit_btn" class="btn btn-primary btn-block btn-lg">
+            Pay {{ format_currency(booking.total_amount) }} Securely
+          </button>
+        </form>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+{% endblock %}

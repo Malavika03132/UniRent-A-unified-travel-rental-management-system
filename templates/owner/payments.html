@@ -1,0 +1,72 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Revenue & Payouts — Owner Portal{% endblock %}
+{% block page_title %}Revenue & Host Payouts{% endblock %}
+
+{% block dashboard_content %}
+
+<!-- Earnings Summary Cards -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-label">Gross Bookings Volume</span>
+    <span class="stat-value">{{ format_currency(total_gross) }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Platform Maintenance (10%)</span>
+    <span class="stat-value" style="color: var(--ur-muted);">{{ format_currency(platform_fee) }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Net Host Payout</span>
+    <span class="stat-value" style="color: var(--ur-burnt-orange);">{{ format_currency(net_payout) }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Disbursement Status</span>
+    <span class="stat-value" style="font-size: 1.3rem; color: #1e7e34;">Verified Bank Direct</span>
+  </div>
+</div>
+
+<div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 2rem;">
+  <h3 style="font-size: 1.25rem; margin: 0 0 0.4rem;">Disbursement Account Information</h3>
+  <p style="color: var(--ur-muted); font-size: 0.9rem; margin: 0;">
+    Linked Account: <strong>{{ owner.bank_account or 'HDFC Bank - Kochi Main Hub' }}</strong> • KYC Status: <span class="badge badge-approved">{{ owner.kyc_status }}</span>
+  </p>
+</div>
+
+<div class="table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Transaction ID</th>
+        <th>Booking Reference</th>
+        <th>Gross Amount</th>
+        <th>Platform Fee (10%)</th>
+        <th>Net Payout</th>
+        <th>Status</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in payments %}
+        <tr>
+          <td><code style="background: var(--ur-ivory); padding: 0.2rem 0.4rem; border-radius: 4px;">{{ p.transaction_reference }}</code></td>
+          <td><strong>{{ p.booking.booking_reference }}</strong></td>
+          <td>{{ format_currency(p.amount) }}</td>
+          <td style="color: var(--ur-muted);">-{{ format_currency(p.amount * 0.10) }}</td>
+          <td><strong style="color: var(--ur-burnt-orange);">{{ format_currency(p.amount * 0.90) }}</strong></td>
+          <td>
+            <span class="badge badge-approved">Settled</span>
+          </td>
+          <td>{{ p.payment_date.strftime('%b %d, %Y') }}</td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="7" style="text-align: center; padding: 3rem 1rem; color: var(--ur-muted);">
+            No transaction records found.
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

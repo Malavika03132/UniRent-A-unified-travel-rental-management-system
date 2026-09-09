@@ -1,0 +1,216 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Administrator Dashboard — UniRent Kerala Operations{% endblock %}
+{% block page_title %}Platform Governance & Operations{% endblock %}
+
+{% block dashboard_content %}
+
+<!-- 8 Core Admin Statistics (Section 13) -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-label">Total Travelers</span>
+    <span class="stat-value">{{ stats.travelers }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Verified Owners</span>
+    <span class="stat-value">{{ stats.owners }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Total Properties</span>
+    <span class="stat-value">{{ stats.properties }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Total Vehicles</span>
+    <span class="stat-value">{{ stats.vehicles }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Total Bookings</span>
+    <span class="stat-value">{{ stats.bookings }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Gross Platform Revenue</span>
+    <span class="stat-value" style="color: var(--ur-burnt-orange);">{{ format_currency(stats.revenue) }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Pending Approvals</span>
+    <span class="stat-value" style="color: #b26a00;">{{ stats.pending_approvals }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Open Complaints</span>
+    <span class="stat-value" style="color: #c5221f;">{{ stats.open_complaints }}</span>
+  </div>
+</div>
+
+<!-- Pending Approvals Alert Section -->
+{% if stats.pending_approvals > 0 %}
+  <div style="background: #fff8eb; border: 1px solid #fedfa8; border-radius: var(--radius-md); padding: 1.5rem 2rem; margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <h3 style="font-size: 1.2rem; color: #b26a00; margin: 0 0 0.3rem;">⚠️ Pending Listing Verifications Requiring Attention</h3>
+      <p style="color: #663c00; font-size: 0.92rem; margin: 0;">
+        There are <strong>{{ stats.pending_approvals }}</strong> listings awaiting inspection. Newly submitted properties and vehicles do not appear publicly until approved.
+      </p>
+    </div>
+    <a href="{{ url_for('admin.approvals') }}" class="btn btn-primary btn-sm">
+      Open Approvals Queue →
+    </a>
+  </div>
+{% endif %}
+
+<!-- Pending Listings Showcase (Quick Action) -->
+{% if pending_properties or pending_vehicles %}
+  <div style="margin-bottom: 3rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+      <h3 style="font-size: 1.25rem; margin:0;">New Listing Submissions (Pending Review)</h3>
+      <a href="{{ url_for('admin.approvals') }}" class="btn btn-outline btn-sm">Review All In Approvals Center →</a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.5rem;">
+      {% for p in pending_properties %}
+        <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.2rem; display: flex; gap: 1rem; align-items: center; box-shadow: var(--shadow-sm);">
+          <img src="{{ p.featured_image }}" alt="Thumb" style="width: 80px; height: 70px; border-radius: 6px; object-fit: cover;">
+          <div style="flex:1;">
+            <span class="badge badge-pending" style="font-size: 0.72rem;">Heritage Stay</span>
+            <h4 style="font-size: 1rem; margin: 0.2rem 0;"><a href="{{ url_for('admin.approvals') }}">{{ p.property_name }}</a></h4>
+            <div style="font-size: 0.8rem; color: var(--ur-muted);">Owner: {{ p.owner.user.full_name }} • {{ p.district }}</div>
+          </div>
+          <div>
+            <a href="{{ url_for('admin.approvals') }}" class="btn btn-secondary btn-sm">Inspect</a>
+          </div>
+        </div>
+      {% endfor %}
+
+      {% for v in pending_vehicles %}
+        <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.2rem; display: flex; gap: 1rem; align-items: center; box-shadow: var(--shadow-sm);">
+          <img src="{{ v.featured_image }}" alt="Thumb" style="width: 80px; height: 70px; border-radius: 6px; object-fit: cover;">
+          <div style="flex:1;">
+            <span class="badge badge-pending" style="font-size: 0.72rem;">Vehicle Fleet</span>
+            <h4 style="font-size: 1rem; margin: 0.2rem 0;"><a href="{{ url_for('admin.approvals') }}">{{ v.vehicle_name }}</a></h4>
+            <div style="font-size: 0.8rem; color: var(--ur-muted);">Owner: {{ v.owner.user.full_name }} • {{ v.district }}</div>
+          </div>
+          <div>
+            <a href="{{ url_for('admin.approvals') }}" class="btn btn-secondary btn-sm">Inspect</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+<!-- Platform Feeds: Recent Bookings & Registrations -->
+<div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 2rem; margin-bottom: 3rem;">
+  
+  <!-- Bookings Ledger -->
+  <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.8rem; box-shadow: var(--shadow-sm);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+      <h3 style="font-size: 1.2rem; margin:0;">Platform Bookings Activity</h3>
+      <a href="{{ url_for('admin.bookings') }}" class="btn btn-outline btn-sm">Global Ledger →</a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Ref</th>
+            <th>Traveler</th>
+            <th>Listing</th>
+            <th>Total</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in recent_bookings %}
+            <tr>
+              <td><strong>{{ b.booking_reference }}</strong></td>
+              <td>{{ b.user.full_name }}</td>
+              <td>{{ b.listing_name }}</td>
+              <td><strong>{{ format_currency(b.total_amount) }}</strong></td>
+              <td>
+                <span class="badge {% if b.booking_status in ['confirmed', 'completed'] %}badge-approved{% else %}badge-active{% endif %}">
+                  {{ b.booking_status|capitalize }}
+                </span>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="5" style="text-align: center; color: var(--ur-muted);">No bookings placed.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Recent User Registrations -->
+  <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.8rem; box-shadow: var(--shadow-sm);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+      <h3 style="font-size: 1.2rem; margin:0;">Recent Registrations</h3>
+      <a href="{{ url_for('admin.travelers') }}" class="btn btn-outline btn-sm">Users →</a>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 0.9rem;">
+      {% for u in recent_registrations %}
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--ur-border-light);">
+          <div>
+            <strong>{{ u.full_name }}</strong>
+            <div style="font-size: 0.78rem; color: var(--ur-muted);">{{ u.email }}</div>
+          </div>
+          <div>
+            {% if u.role == 'admin' %}
+              <span class="badge badge-delivery">Admin</span>
+            {% elif u.role == 'owner' %}
+              <span class="badge badge-pickup">Host</span>
+            {% else %}
+              <span class="badge badge-approved">Traveler</span>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+<!-- Recent Complaints Feed -->
+<div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.8rem; box-shadow: var(--shadow-sm);">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+    <h3 style="font-size: 1.2rem; margin:0;">Dispute & Complaint Triage Queue</h3>
+    <a href="{{ url_for('admin.complaints') }}" class="btn btn-outline btn-sm">Arbitration Center →</a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Ticket</th>
+          <th>Traveler</th>
+          <th>Host</th>
+          <th>Category</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in recent_complaints %}
+          <tr>
+            <td><strong>{{ c.complaint_reference }}</strong></td>
+            <td>{{ c.user.full_name }}</td>
+            <td>{{ c.owner.user.full_name }}</td>
+            <td><span class="badge badge-pickup">{{ c.category }}</span></td>
+            <td>
+              <span class="badge {% if c.status == 'resolved' %}badge-approved{% elif c.status == 'owner_responded' %}badge-active{% else %}badge-pending{% endif %}">
+                {{ c.status|replace('_', ' ')|capitalize }}
+              </span>
+            </td>
+            <td>
+              <a href="{{ url_for('admin.complaints') }}" class="btn btn-outline btn-sm">Triage</a>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="6" style="text-align:center; padding: 2rem; color: var(--ur-muted);">No open complaints on record.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

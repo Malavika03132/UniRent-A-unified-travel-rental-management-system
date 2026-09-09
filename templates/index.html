@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block title %}UniRent — Kerala Heritage Stays & Vehicle Rentals{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="container hero-content">
+    <div class="hero-badge">
+      <span></span> Authentic Kerala Architecture & Mobility</span>
+    </div>
+    <h1 class="hero-title">
+      Your Kerala story <em>begins here.</em>
+    </h1>
+    <p class="hero-subtitle">
+      Discover handpicked centuries-old Tharavadu estates, royal Nalukettu courtyards, and verified rental cars, adventure bikes, and scooters across Ernakulam and Thrissur.
+    </p>
+
+    <div class="hero-cta-group">
+      <a href="{{ url_for('main.stays') }}" class="btn btn-primary btn-lg">Explore Stays</a>
+      <a href="{{ url_for('main.vehicles') }}" class="btn btn-secondary btn-lg">Rent a Vehicle</a>
+    </div>
+
+    <!-- Search Card Component -->
+    <div class="search-card">
+      <form action="{{ url_for('main.stays') }}" method="GET" class="search-form">
+        <div class="search-field">
+          <label for="search_district">Kerala District</label>
+          <select name="district" id="search_district">
+            <option value="">All Regions (Ernakulam & Thrissur)</option>
+            <option value="Ernakulam">Ernakulam (Kochi / Aluva / Cherai)</option>
+            <option value="Thrissur">Thrissur (Cultural Capital / Chalakudy)</option>
+          </select>
+        </div>
+
+        <div class="search-field">
+          <label for="search_category">Category</label>
+          <select name="type" id="search_category">
+            <option value="">Heritage Stays & Villas</option>
+            <option value="Traditional Kerala House">Traditional Tharavadu</option>
+            <option value="Heritage Villa">Heritage Villa / Manor</option>
+            <option value="Heritage Stay">Riverfront / Coastal Stay</option>
+          </select>
+        </div>
+
+        <div class="search-field">
+          <label for="search_dates">Travel Dates</label>
+          <input type="text" id="search_dates" placeholder="Check-in → Check-out" onfocus="(this.type='date')" onblur="(this.type='text')">
+        </div>
+
+        <div>
+          <button type="submit" class="btn btn-primary btn-block" style="padding: 0.85rem 1.6rem;">
+            Search Stays
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</section>
+
+<!-- Space for overlapping search card -->
+<div style="height: 6.5rem;"></div>
+
+<!-- Featured Heritage Stays Section -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <div class="section-subtitle">Architectural Sanctuaries</div>
+        <h2>Featured Heritage Stays</h2>
+      </div>
+      <a href="{{ url_for('main.stays') }}" class="btn btn-outline btn-sm">View All Stays →</a>
+    </div>
+
+    <div class="grid-cards">
+      {% for stay in featured_stays %}
+        <div class="card">
+          <div class="card-img-wrap">
+            <img src="{{ stay.featured_image }}" alt="{{ stay.property_name }}" loading="lazy">
+            <div class="card-top-badges">
+              <span class="card-district-tag">📍 {{ stay.district }}</span>
+              <span class="card-rating-tag">★ {{ stay.average_rating }}</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-meta-type">{{ stay.property_type }}</div>
+            <h3 class="card-title">
+              <a href="{{ url_for('main.stay_details', property_id=stay.property_id) }}">{{ stay.property_name }}</a>
+            </h3>
+            <div class="card-location">
+              <span>{{ stay.address }}</span>
+            </div>
+            <p class="card-desc">{{ stay.description }}</p>
+            
+            <div class="card-specs-row">
+              <span>👥 {{ stay.guest_capacity }} Guests</span>
+              <span>🛏️ {{ stay.bedrooms }} Bedrooms</span>
+              <span>🚿 {{ stay.bathrooms }} Baths</span>
+            </div>
+
+            <div class="card-footer">
+              <div class="card-price">
+                <span class="price-val">{{ format_currency(stay.price_per_night) }}</span>
+                <span class="price-period">per night</span>
+              </div>
+              <div style="display: flex; gap: 0.5rem;">
+                <a href="{{ url_for('main.stay_details', property_id=stay.property_id) }}" class="btn btn-outline btn-sm">Details</a>
+                <a href="{{ url_for('main.booking', type='property', id=stay.property_id) }}" class="btn btn-primary btn-sm">Book Now</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Popular Vehicles Section -->
+<section class="section" style="background-color: var(--ur-ivory); border-top: 1px solid var(--ur-border); border-bottom: 1px solid var(--ur-border);">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <div class="section-subtitle">Effortless Mobility</div>
+        <h2>Curated Vehicle Rentals</h2>
+      </div>
+      <a href="{{ url_for('main.vehicles') }}" class="btn btn-outline btn-sm">View All Vehicles →</a>
+    </div>
+
+    <div class="grid-cards">
+      {% for veh in popular_vehicles %}
+        <div class="card">
+          <div class="card-img-wrap">
+            <img src="{{ veh.featured_image }}" alt="{{ veh.vehicle_name }}" loading="lazy">
+            <div class="card-top-badges">
+              <span class="card-district-tag">📍 {{ veh.district }}</span>
+              {% if veh.delivery_available %}
+                <span class="badge badge-delivery">Pickup or Delivery</span>
+              {% else %}
+                <span class="badge badge-pickup">Pickup Only</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-meta-type">{{ veh.vehicle_type|capitalize }} • {{ veh.model }}</div>
+            <h3 class="card-title">
+              <a href="{{ url_for('main.vehicle_details', vehicle_id=veh.vehicle_id) }}">{{ veh.vehicle_name }}</a>
+            </h3>
+            <div class="card-location">
+              <span>{{ veh.pickup_location }}</span>
+            </div>
+            <p class="card-desc">{{ veh.description }}</p>
+
+            <div class="card-specs-row">
+              <span>⚙️ {{ veh.specs_dict.get('transmission', 'Manual') }}</span>
+              <span>⛽ {{ veh.specs_dict.get('fuel', 'Petrol') }}</span>
+              <span>👥 {{ veh.specs_dict.get('seats', '2 Seater') }}</span>
+            </div>
+
+            <div class="card-footer">
+              <div class="card-price">
+                <span class="price-val">{{ format_currency(veh.price_per_day) }}</span>
+                <span class="price-period">per day</span>
+              </div>
+              <div style="display: flex; gap: 0.5rem;">
+                <a href="{{ url_for('main.vehicle_details', vehicle_id=veh.vehicle_id) }}" class="btn btn-outline btn-sm">Details</a>
+                <a href="{{ url_for('main.booking', type='vehicle', id=veh.vehicle_id) }}" class="btn btn-primary btn-sm">Book</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- District Spotlights (Ernakulam & Thrissur) -->
+<section class="section">
+  <div class="container">
+    <div class="section-header" style="text-align: center; display: block; max-width: 680px; margin: 0 auto 3rem;">
+      <div class="section-subtitle">Kerala Operational Zones</div>
+      <h2>Explore Ernakulam & Thrissur</h2>
+      <p style="color: var(--ur-muted); margin-top: 0.5rem;">Two culturally rich districts where ancient heritage, tranquil coastal waterways, and emerald forests converge.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+      
+      <!-- Ernakulam Card -->
+      <div style="position: relative; border-radius: var(--radius-md); overflow: hidden; height: 380px; box-shadow: var(--shadow-md); border: 1px solid var(--ur-border);">
+        <img src="https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80" alt="Ernakulam Kochi" style="width:100%; height:100%; object-fit:cover;">
+        <div style="position: absolute; inset: 0; background: linear-gradient(180deg, transparent 30%, rgba(45,33,27,0.85) 100%); display:flex; flex-direction:column; justify-content:flex-end; padding: 2rem; color: #fff;">
+          <span style="color: #ffaa85; font-size: 0.82rem; font-weight: 700; text-transform:uppercase; letter-spacing:0.08em;">District Spotlight</span>
+          <h3 style="color:#fff; font-size: 1.8rem; margin: 0.3rem 0 0.5rem;">Ernakulam: Fort Kochi & Backwaters</h3>
+          <p style="color: #e5ddd3; font-size: 0.92rem; margin-bottom: 1.2rem;">Historic spice ports, Dutch mansions, Periyar riverbank illams, and Cherai golden beaches.</p>
+          <div>
+            <a href="{{ url_for('main.stays', district='Ernakulam') }}" class="btn btn-primary btn-sm">Explore Ernakulam ({{ stays_count }} Stays)</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Thrissur Card -->
+      <div style="position: relative; border-radius: var(--radius-md); overflow: hidden; height: 380px; box-shadow: var(--shadow-md); border: 1px solid var(--ur-border);">
+        <img src="https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=1200&q=80" alt="Thrissur Cultural Capital" style="width:100%; height:100%; object-fit:cover;">
+        <div style="position: absolute; inset: 0; background: linear-gradient(180deg, transparent 30%, rgba(45,33,27,0.85) 100%); display:flex; flex-direction:column; justify-content:flex-end; padding: 2rem; color: #fff;">
+          <span style="color: #ffaa85; font-size: 0.82rem; font-weight: 700; text-transform:uppercase; letter-spacing:0.08em;">District Spotlight</span>
+          <h3 style="color:#fff; font-size: 1.8rem; margin: 0.3rem 0 0.5rem;">Thrissur: The Cultural Capital</h3>
+          <p style="color: #e5ddd3; font-size: 0.92rem; margin-bottom: 1.2rem;">Ancient Brahmin Illams, Vadakkumnathan temple vibes, Puzhakkal paddy fields, and Athirappilly cascades.</p>
+          <div>
+            <a href="{{ url_for('main.stays', district='Thrissur') }}" class="btn btn-primary btn-sm">Explore Thrissur Stays</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Why Choose UniRent Section -->
+<section class="section" style="background-color: var(--ur-white); border-top: 1px solid var(--ur-border);">
+  <div class="container">
+    <div class="section-header" style="text-align: center; display: block; max-width: 650px; margin: 0 auto 3.5rem;">
+      <div class="section-subtitle">The UniRent Distinction</div>
+      <h2>Why Travel With UniRent?</h2>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5rem;">
+      <div style="text-align: center; padding: 1.5rem;">
+        <div style="font-size: 2.8rem; margin-bottom: 1rem;">🏛️</div>
+        <h4 style="margin-bottom: 0.6rem;">Preserved Heritage Stays</h4>
+        <p style="color: var(--ur-muted); font-size: 0.93rem;">Every property is verified by our architectural preservation team for authenticity, structural integrity, and local heritage character.</p>
+      </div>
+
+      <div style="text-align: center; padding: 1.5rem;">
+        <div style="font-size: 2.8rem; margin-bottom: 1rem;">🚗</div>
+        <h4 style="margin-bottom: 0.6rem;">Seamless Vehicle Rentals</h4>
+        <p style="color: var(--ur-muted); font-size: 0.93rem;">From iconic Royal Enfields to family Innovas and quick scooters, pick up directly or opt for convenient host delivery.</p>
+      </div>
+
+      <div style="text-align: center; padding: 1.5rem;">
+        <div style="font-size: 2.8rem; margin-bottom: 1rem;">🛡️</div>
+        <h4 style="margin-bottom: 0.6rem;">Verified Hosts & Safety</h4>
+        <p style="color: var(--ur-muted); font-size: 0.93rem;">Direct connection to authentic local hosts with transparent booking terms, secure payments, and structured concierge assistance.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Guest Reviews Section -->
+<section class="section" style="background-color: var(--ur-ivory); border-top: 1px solid var(--ur-border); border-bottom: 1px solid var(--ur-border);">
+  <div class="container">
+    <div class="section-header" style="text-align: center; display: block; max-width: 600px; margin: 0 auto 3rem;">
+      <div class="section-subtitle">Traveler Voices</div>
+      <h2>Authentic Kerala Memories</h2>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.8rem;">
+      {% for rev in recent_reviews %}
+        <div style="background-color: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.8rem; box-shadow: var(--shadow-sm);">
+          <div style="color: #f59e0b; margin-bottom: 0.6rem; font-size: 1.1rem;">
+            {% for i in range(rev.rating) %}★{% endfor %}
+          </div>
+          <h4 style="font-size: 1.05rem; margin-bottom: 0.5rem;">{{ rev.review_title }}</h4>
+          <p style="font-size: 0.92rem; color: var(--ur-text); line-height: 1.6; margin-bottom: 1.2rem;">"{{ rev.review_text }}"</p>
+          <div style="display:flex; justify-content:space-between; align-items:center; border-top: 1px solid var(--ur-border-light); padding-top: 0.8rem; font-size: 0.85rem; color: var(--ur-muted);">
+            <strong>{{ rev.author_name }}</strong>
+            <span>Verified Stay</span>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Final Call to Action -->
+<section class="section" style="text-align: center; padding: 6rem 0;">
+  <div class="container" style="max-width: 750px;">
+    <h2>Ready to immerse yourself in Kerala’s living heritage?</h2>
+    <p style="color: var(--ur-muted); font-size: 1.1rem; margin: 1rem 0 2.5rem;">
+      Reserve your traditional stay and companion vehicle today, or register your heritage property or fleet with UniRent.
+    </p>
+    <div style="display: flex; justify-content: center; gap: 1rem;">
+      <a href="{{ url_for('main.stays') }}" class="btn btn-primary btn-lg">Explore Heritage Stays</a>
+      <a href="{{ url_for('auth.register', role='owner') }}" class="btn btn-outline btn-lg">Host With Us</a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

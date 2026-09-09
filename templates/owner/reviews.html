@@ -1,0 +1,56 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Guest Reviews — Owner Portal{% endblock %}
+{% block page_title %}Traveler Reviews & Ratings{% endblock %}
+
+{% block dashboard_content %}
+
+<div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+  <div>
+    <h3 style="font-size: 1.25rem; margin: 0 0 0.3rem;">Guest Testimonials</h3>
+    <p style="color: var(--ur-muted); font-size: 0.88rem; margin: 0;">Verified reviews across your heritage properties and rental fleet in Kerala.</p>
+  </div>
+  <div>
+    <span class="badge badge-delivery">{{ reviews|length }} Total Reviews</span>
+  </div>
+</div>
+
+{% if reviews %}
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.8rem;">
+    {% for r in reviews %}
+      <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.8rem; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.8rem;">
+          <div>
+            <strong style="color: var(--ur-brown); font-size: 1.05rem;">{{ r.author_name }}</strong>
+            <div style="font-size: 0.78rem; color: var(--ur-muted);">
+              {{ r.property.property_name if r.property else r.vehicle.vehicle_name }}
+            </div>
+          </div>
+          <div style="color: #f59e0b; font-size: 1.1rem;">
+            {% for i in range(r.rating) %}★{% endfor %}
+          </div>
+        </div>
+
+        {% if r.review_title %}
+          <h5 style="font-size: 0.95rem; margin-bottom: 0.4rem;">{{ r.review_title }}</h5>
+        {% endif %}
+
+        <p style="font-size: 0.92rem; color: var(--ur-text); line-height: 1.6; margin-bottom: 1rem;">
+          "{{ r.review_text }}"
+        </p>
+
+        <div style="font-size: 0.78rem; color: var(--ur-muted); border-top: 1px solid var(--ur-border-light); padding-top: 0.6rem;">
+          Reviewed on {{ r.created_at.strftime('%B %d, %Y') }} • Verified Booking: {{ r.booking.booking_reference }}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 3.5rem 2rem; text-align: center; color: var(--ur-muted);">
+    <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">⭐</div>
+    <h4>No Guest Reviews Yet</h4>
+    <p style="font-size: 0.9rem; margin-top: 0.4rem;">As travelers complete their reservations at your listings, their feedback will appear here.</p>
+  </div>
+{% endif %}
+
+{% endblock %}

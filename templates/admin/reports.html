@@ -1,0 +1,84 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Reports & Analytics — Admin Portal{% endblock %}
+{% block page_title %}Operational Intelligence & District Reports{% endblock %}
+
+{% block dashboard_content %}
+
+<!-- District Distribution Comparison -->
+<div style="margin-bottom: 3rem;">
+  <h3 style="font-size: 1.25rem; margin-bottom: 1.2rem;">Kerala Operational District Share (Phase 1)</h3>
+  
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+    
+    <!-- Ernakulam Report -->
+    <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 2rem; box-shadow: var(--shadow-sm);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h4 style="font-size: 1.2rem; margin:0;">🌊 Ernakulam District</h4>
+        <span class="badge badge-delivery">Kochi Hub</span>
+      </div>
+      <p style="color: var(--ur-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+        Maritime heritage corridor encompassing Fort Kochi, Mattancherry, Cherai lagoon, and Aluva riverfront estates.
+      </p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div style="background: var(--ur-ivory); padding: 1rem; border-radius: var(--radius-sm); text-align: center;">
+          <div style="font-size: 0.8rem; color: var(--ur-muted); text-transform: uppercase;">Approved Stays</div>
+          <div style="font-size: 1.8rem; font-weight: 700; color: var(--ur-brown);">{{ stats.ernakulam_props }}</div>
+        </div>
+        <div style="background: var(--ur-ivory); padding: 1rem; border-radius: var(--radius-sm); text-align: center;">
+          <div style="font-size: 0.8rem; color: var(--ur-muted); text-transform: uppercase;">Active Fleet</div>
+          <div style="font-size: 1.8rem; font-weight: 700; color: var(--ur-burnt-orange);">{{ stats.ernakulam_vehs }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Thrissur Report -->
+    <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 2rem; box-shadow: var(--shadow-sm);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h4 style="font-size: 1.2rem; margin:0;">🛕 Thrissur District</h4>
+        <span class="badge badge-pickup">Cultural Hub</span>
+      </div>
+      <p style="color: var(--ur-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+        Cultural capital corridor covering ancestral Brahmin Illams, Vadakkumnathan environs, Puzhakkal, and Chalakudy.
+      </p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div style="background: var(--ur-ivory); padding: 1rem; border-radius: var(--radius-sm); text-align: center;">
+          <div style="font-size: 0.8rem; color: var(--ur-muted); text-transform: uppercase;">Approved Stays</div>
+          <div style="font-size: 1.8rem; font-weight: 700; color: var(--ur-brown);">{{ stats.thrissur_props }}</div>
+        </div>
+        <div style="background: var(--ur-ivory); padding: 1rem; border-radius: var(--radius-sm); text-align: center;">
+          <div style="font-size: 0.8rem; color: var(--ur-muted); text-transform: uppercase;">Active Fleet</div>
+          <div style="font-size: 1.8rem; font-weight: 700; color: var(--ur-burnt-orange);">{{ stats.thrissur_vehs }}</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Fleet Category Breakdown -->
+<div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 2rem; box-shadow: var(--shadow-sm); margin-bottom: 3rem;">
+  <h3 style="font-size: 1.2rem; margin-bottom: 1.2rem;">Fleet Category Inventory</h3>
+  
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+    <div style="border: 1px solid var(--ur-border-light); padding: 1.5rem; border-radius: var(--radius-sm); text-align: center;">
+      <div style="font-size: 2rem; margin-bottom: 0.4rem;">🚗</div>
+      <div style="font-size: 0.85rem; color: var(--ur-muted); text-transform: uppercase;">Cars & SUVs</div>
+      <div style="font-size: 1.8rem; font-weight: 700; color: var(--ur-brown);">{{ stats.cars_count }}</div>
+    </div>
+    <div style="border: 1px solid var(--ur-border-light); padding: 1.5rem; border-radius: var(--radius-sm); text-align: center;">
+      <div style="font-size: 2rem; margin-bottom: 0.4rem;">🏍️</div>
+      <div style="font-size: 0.85rem; color: var(--ur-muted); text-transform: uppercase;">Motorcycles & Enfields</div>
+      <div style="font-size: 1.8rem; font-weight: 700; color: var(--ur-burnt-orange);">{{ stats.bikes_count }}</div>
+    </div>
+    <div style="border: 1px solid var(--ur-border-light); padding: 1.5rem; border-radius: var(--radius-sm); text-align: center;">
+      <div style="font-size: 2rem; margin-bottom: 0.4rem;">🛵</div>
+      <div style="font-size: 0.85rem; color: var(--ur-muted); text-transform: uppercase;">Town Scooters</div>
+      <div style="font-size: 1.8rem; font-weight: 700; color: var(--ur-brown);">{{ stats.scooters_count }}</div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Rental Vehicles in Kerala (Cars, Bikes, Scooters) — UniRent{% endblock %}
+
+{% block content %}
+
+<!-- Header Banner -->
+<div style="background-color: var(--ur-brown); color: var(--ur-ivory); padding: 3.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+  <div class="container">
+    <span style="color: #ffaa85; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;">Curated Mobility</span>
+    <h1 style="color: var(--ur-white); font-size: 2.5rem; margin: 0.4rem 0 0.8rem;">Kerala Vehicle Rentals</h1>
+    <p style="color: #d8cec1; max-width: 680px; font-size: 1.05rem; margin: 0;">
+      Tour Kerala's scenic backroads in iconic Royal Enfields, modern adventure SUVs, and zippy town scooters in Ernakulam and Thrissur.
+    </p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="catalog-layout">
+    
+    <!-- Filter Sidebar -->
+    <aside>
+      <div class="filter-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+          <h3 style="font-size: 1.2rem; margin:0;">Filters</h3>
+          <a href="{{ url_for('main.vehicles') }}" style="font-size: 0.82rem; color: var(--ur-burnt-orange);">Reset All</a>
+        </div>
+
+        <form action="{{ url_for('main.vehicles') }}" method="GET">
+          
+          <!-- Category Filter -->
+          <div class="filter-group">
+            <div class="filter-title">Vehicle Category</div>
+            <div class="filter-options">
+              <label>
+                <input type="radio" name="type" value="" {% if not selected_type %}checked{% endif %} onchange="this.form.submit()"> All Vehicles
+              </label>
+              <label>
+                <input type="radio" name="type" value="car" {% if selected_type == 'car' %}checked{% endif %} onchange="this.form.submit()"> Cars & SUVs
+              </label>
+              <label>
+                <input type="radio" name="type" value="bike" {% if selected_type == 'bike' %}checked{% endif %} onchange="this.form.submit()"> Touring Motorcycles
+              </label>
+              <label>
+                <input type="radio" name="type" value="scooter" {% if selected_type == 'scooter' %}checked{% endif %} onchange="this.form.submit()"> Urban Scooters
+              </label>
+            </div>
+          </div>
+
+          <!-- District Filter -->
+          <div class="filter-group">
+            <div class="filter-title">Kerala District</div>
+            <div class="filter-options">
+              <label>
+                <input type="radio" name="district" value="" {% if not selected_district %}checked{% endif %} onchange="this.form.submit()"> All Districts
+              </label>
+              <label>
+                <input type="radio" name="district" value="Ernakulam" {% if selected_district == 'Ernakulam' %}checked{% endif %} onchange="this.form.submit()"> Ernakulam (Kochi / Aluva)
+              </label>
+              <label>
+                <input type="radio" name="district" value="Thrissur" {% if selected_district == 'Thrissur' %}checked{% endif %} onchange="this.form.submit()"> Thrissur
+              </label>
+            </div>
+          </div>
+
+          <!-- Delivery Available Filter -->
+          <div class="filter-group">
+            <div class="filter-title">Convenience Options</div>
+            <div class="filter-options">
+              <label>
+                <input type="checkbox" name="delivery" value="1" {% if selected_delivery == '1' %}checked{% endif %} onchange="this.form.submit()"> Owner Delivery Available
+              </label>
+            </div>
+          </div>
+
+          <!-- Price Filter -->
+          <div class="filter-group">
+            <div class="filter-title">Max Price (per day)</div>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <input type="number" name="max_price" value="{{ max_price or '' }}" placeholder="₹ Max" class="form-control" style="padding: 0.5rem;">
+              <button type="submit" class="btn btn-secondary btn-sm">Apply</button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </aside>
+
+    <!-- Listings Content -->
+    <main>
+      <!-- Sorting & Counter Bar -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--ur-white); border: 1px solid var(--ur-border); padding: 0.9rem 1.4rem; border-radius: var(--radius-sm);">
+        <div style="font-size: 0.95rem; color: var(--ur-brown);">
+          Showing <strong>{{ vehicles|length }}</strong> verified rental vehicles
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <label for="veh_sort_select" style="font-size: 0.88rem; color: var(--ur-muted); font-weight: 500;">Sort By:</label>
+          <select id="veh_sort_select" class="form-control" style="padding: 0.4rem 0.8rem; width: auto; font-size: 0.88rem;" onchange="window.location.href=this.value">
+            <option value="{{ url_for('main.vehicles', district=selected_district, type=selected_type, max_price=max_price, delivery=selected_delivery, sort='newest') }}" {% if sort_by == 'newest' %}selected{% endif %}>Newest</option>
+            <option value="{{ url_for('main.vehicles', district=selected_district, type=selected_type, max_price=max_price, delivery=selected_delivery, sort='price_asc') }}" {% if sort_by == 'price_asc' %}selected{% endif %}>Price: Low → High</option>
+            <option value="{{ url_for('main.vehicles', district=selected_district, type=selected_type, max_price=max_price, delivery=selected_delivery, sort='price_desc') }}" {% if sort_by == 'price_desc' %}selected{% endif %}>Price: High → Low</option>
+          </select>
+        </div>
+      </div>
+
+      {% if vehicles %}
+        <div class="grid-cards">
+          {% for veh in vehicles %}
+            <div class="card">
+              <div class="card-img-wrap">
+                <img src="{{ veh.featured_image }}" alt="{{ veh.vehicle_name }}" loading="lazy">
+                <div class="card-top-badges">
+                  <span class="card-district-tag">📍 {{ veh.district }}</span>
+                  {% if veh.delivery_available %}
+                    <span class="badge badge-delivery">Pickup or Delivery</span>
+                  {% else %}
+                    <span class="badge badge-pickup">Pickup Only</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="card-meta-type">{{ veh.vehicle_type|capitalize }} • {{ veh.model }}</div>
+                <h3 class="card-title">
+                  <a href="{{ url_for('main.vehicle_details', vehicle_id=veh.vehicle_id) }}">{{ veh.vehicle_name }}</a>
+                </h3>
+                <div class="card-location">
+                  <span>{{ veh.pickup_location }}</span>
+                </div>
+                <p class="card-desc">{{ veh.description }}</p>
+
+                <div class="card-specs-row">
+                  <span>⚙️ {{ veh.specs_dict.get('transmission', 'Manual') }}</span>
+                  <span>⛽ {{ veh.specs_dict.get('fuel', 'Petrol') }}</span>
+                  <span>👥 {{ veh.specs_dict.get('seats', '2 Seats') }}</span>
+                </div>
+
+                <div class="card-footer">
+                  <div class="card-price">
+                    <span class="price-val">{{ format_currency(veh.price_per_day) }}</span>
+                    <span class="price-period">per day</span>
+                  </div>
+                  <div style="display: flex; gap: 0.5rem;">
+                    <a href="{{ url_for('main.vehicle_details', vehicle_id=veh.vehicle_id) }}" class="btn btn-outline btn-sm">View Details</a>
+                    <a href="{{ url_for('main.booking', type='vehicle', id=veh.vehicle_id) }}" class="btn btn-primary btn-sm">Book</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="background-color: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 4rem 2rem; text-align: center;">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">🚗</div>
+          <h3>No Vehicles Found Matching Filters</h3>
+          <p style="color: var(--ur-muted); max-width: 450px; margin: 0.5rem auto 1.5rem;">Try modifying your category or district selection.</p>
+          <a href="{{ url_for('main.vehicles') }}" class="btn btn-primary">Reset Filters</a>
+        </div>
+      {% endif %}
+
+    </main>
+
+  </div>
+</div>
+
+{% endblock %}
