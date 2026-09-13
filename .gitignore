@@ -7,3 +7,6 @@ venv/
 ENV/
 instance/
 .pytest_cache/
+
+.env
+unirent.db
