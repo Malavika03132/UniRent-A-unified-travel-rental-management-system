@@ -1,5 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, abort
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, abort, jsonify
 from datetime import datetime
+import uuid
 from app.models import db, Property, Vehicle, Review, Booking, Payment, User
 
 main_bp = Blueprint('main', __name__)
@@ -235,16 +236,112 @@ def payment():
         
     return render_template('payment.html', booking=booking_obj)
 
+@main_bp.route('/payment/process', methods=['POST'])
+def process_demo_payment():
+    try:
+        data = request.get_json()
+
+        booking_reference = data.get('booking_reference')
+        payment_method = data.get('payment_method')
+
+        # Validate booking reference
+        if not booking_reference:
+            return jsonify({
+                'success': False,
+                'message': 'Booking reference is required.'
+            }), 400
+
+        # Validate payment method
+        if payment_method not in ['card', 'upi', 'netbanking']:
+            return jsonify({
+                'success': False,
+                'message': 'Invalid payment method.'
+            }), 400
+
+        # Find the booking
+        booking_obj = Booking.query.filter_by(
+            booking_reference=booking_reference
+        ).first()
+
+        if not booking_obj:
+            return jsonify({
+                'success': False,
+                'message': 'Booking not found.'
+            }), 404
+
+        # Check if payment already exists
+        if booking_obj.payment:
+            return jsonify({
+                'success': False,
+                'message': 'Payment has already been completed for this booking.'
+            }), 400
+
+        # Generate a mock Razorpay-style transaction reference
+        transaction_reference = (
+            'MOCK-RZP-' +
+            uuid.uuid4().hex[:10].upper()
+        )
+
+        # Create payment record
+        payment_obj = Payment(
+            booking_id=booking_obj.booking_id,
+            amount=booking_obj.total_amount,
+            payment_method=payment_method,
+            transaction_reference=transaction_reference,
+            payment_status='successful',
+            gateway_response='Demo payment successfully simulated by UniRent.'
+        )
+
+        # Add payment to database
+        db.session.add(payment_obj)
+
+        # Confirm booking after successful payment
+        booking_obj.booking_status = 'confirmed'
+
+        # Save everything to MySQL
+        db.session.commit()
+
+        return jsonify({
+    'success': True,
+    'message': 'Payment successful.',
+    'transaction_reference': transaction_reference,
+    'booking_reference': booking_obj.booking_reference,
+    'booking_id': booking_obj.booking_id
+})
+
+    except Exception as e:
+        db.session.rollback()
+
+        print("Payment processing error:", e)
+
+        return jsonify({
+            'success': False,
+            'message': 'Payment processing failed.'
+        }), 500
+
 
 @main_bp.route('/confirmation')
 def confirmation():
+    booking_id = request.args.get('booking_id', type=int)
     booking_ref = request.args.get('ref')
+
     booking_obj = None
-    if booking_ref:
-        booking_obj = Booking.query.filter_by(booking_reference=booking_ref).first()
-        
+
+    # First try booking ID
+    if booking_id:
+        booking_obj = db.session.get(Booking, booking_id)
+
+    # Fallback to booking reference
+    elif booking_ref:
+        booking_obj = Booking.query.filter_by(
+            booking_reference=booking_ref
+        ).first()
+
     if not booking_obj:
         flash('Confirmation details not found.', 'info')
         return redirect(url_for('main.index'))
-        
-    return render_template('confirmation.html', booking=booking_obj)
+
+    return render_template(
+        'confirmation.html',
+        booking=booking_obj
+    )
