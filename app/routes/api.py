@@ -64,92 +64,239 @@ def get_vehicle(vehicle_id):
 @api_bp.route('/bookings', methods=['POST'])
 def create_booking():
     user_id = session.get('user_id')
+
     if not user_id:
-        return jsonify({'success': False, 'error': 'Please log in to make a booking'}), 401
-        
+        return jsonify({
+            'success': False,
+            'error': 'Please log in to make a booking'
+        }), 401
+
     data = request.get_json() or request.form
+
     listing_type = data.get('listing_type', 'property')
     item_id = int(data.get('item_id', 0))
     start_str = data.get('start_date')
     end_str = data.get('end_date')
     special_requests = data.get('special_requests', '')
-    
+
+    # --------------------------------------------------
+    # VALIDATE DATES
+    # --------------------------------------------------
+
     try:
-        start_date = datetime.strptime(start_str, '%Y-%m-%d').date()
-        end_date = datetime.strptime(end_str, '%Y-%m-%d').date()
+        start_date = datetime.strptime(
+            start_str,
+            '%Y-%m-%d'
+        ).date()
+
+        end_date = datetime.strptime(
+            end_str,
+            '%Y-%m-%d'
+        ).date()
+
         if end_date <= start_date:
-            return jsonify({'success': False, 'error': 'Check-out/return date must be after check-in date'}), 400
+            return jsonify({
+                'success': False,
+                'error': 'Check-out/return date must be after check-in date'
+            }), 400
+
         days = (end_date - start_date).days
+
     except Exception:
-        return jsonify({'success': False, 'error': 'Invalid dates provided'}), 400
-        
+        return jsonify({
+            'success': False,
+            'error': 'Invalid dates provided'
+        }), 400
+
+    # --------------------------------------------------
+    # DEFAULT VALUES
+    # --------------------------------------------------
+
     owner_id = None
     rate = 0.0
+
     property_id = None
     vehicle_id = None
-    
+
+    # Security deposit is ONLY for vehicles
+    security_deposit = 0.0
+
+    # --------------------------------------------------
+    # PROPERTY
+    # --------------------------------------------------
+
     if listing_type == 'property':
+
         prop = db.session.get(Property, item_id)
+
         if not prop:
-            return jsonify({'success': False, 'error': 'Property not found'}), 404
+            return jsonify({
+                'success': False,
+                'error': 'Property not found'
+            }), 404
+
         owner_id = prop.owner_id
-        rate = prop.price_per_night
+        rate = float(prop.price_per_night)
         property_id = prop.property_id
-    else:
+
+        # No security deposit for properties
+        security_deposit = 0.0
+
+    # --------------------------------------------------
+    # VEHICLE
+    # --------------------------------------------------
+
+    elif listing_type == 'vehicle':
+
         veh = db.session.get(Vehicle, item_id)
+
         if not veh:
-            return jsonify({'success': False, 'error': 'Vehicle not found'}), 404
+            return jsonify({
+                'success': False,
+                'error': 'Vehicle not found'
+            }), 404
+
         owner_id = veh.owner_id
-        rate = veh.price_per_day
+        rate = float(veh.price_per_day)
         vehicle_id = veh.vehicle_id
-        
+
+        # Get vehicle-specific security deposit
+        # Default = ₹2,000
+        security_deposit = float(
+            veh.security_deposit or 2000.0
+        )
+
+    else:
+
+        return jsonify({
+            'success': False,
+            'error': 'Invalid listing type'
+        }), 400
+
+    # --------------------------------------------------
+    # CALCULATE AMOUNTS
+    # --------------------------------------------------
+
+    # Rental amount
     subtotal = rate * days
-    service_fee = round(subtotal * 0.05, 2)  # 5% service fee
-    tax = round(subtotal * 0.12, 2)         # 12% GST/tax
-    total_amount = subtotal + service_fee + tax
-    
-    ref = f"UR-{datetime.utcnow().year}-B{int(datetime.utcnow().timestamp()) % 100000:05d}"
-    
+
+    # 5% service fee
+    service_fee = round(
+        subtotal * 0.05,
+        2
+    )
+
+    # 12% tax
+    tax = round(
+        subtotal * 0.12,
+        2
+    )
+
+    # Final total
+    #
+    # Property:
+    # subtotal + service fee + tax
+    #
+    # Vehicle:
+    # subtotal + service fee + tax + security deposit
+
+    total_amount = round(
+        subtotal
+        + service_fee
+        + tax
+        + security_deposit,
+        2
+    )
+
+    # --------------------------------------------------
+    # BOOKING REFERENCE
+    # --------------------------------------------------
+
+    ref = (
+        f"UR-{datetime.utcnow().year}-"
+        f"B{int(datetime.utcnow().timestamp()) % 100000:05d}"
+    )
+
+    # --------------------------------------------------
+    # CREATE BOOKING
+    # --------------------------------------------------
+
     booking = Booking(
         booking_reference=ref,
+
         user_id=user_id,
         owner_id=owner_id,
+
         listing_type=listing_type,
+
         property_id=property_id,
         vehicle_id=vehicle_id,
+
         start_date=start_date,
         end_date=end_date,
+
         total_days=days,
         daily_rate=rate,
+
         service_fee=service_fee,
         tax_amount=tax,
+
+        # Security deposit
+        # 0 for property
+        # Vehicle-specific amount for vehicle
+        security_deposit=security_deposit,
+
         total_amount=total_amount,
-        booking_status='confirmed',
+
+        booking_status='pending',
+
         special_requests=special_requests
     )
+
     db.session.add(booking)
-    db.session.flush()
-    
-    # Create initial successful payment record for simulation
-    txn_ref = f"TXN-RPY-{int(datetime.utcnow().timestamp())}"
-    payment = Payment(
-        booking_id=booking.booking_id,
-        amount=total_amount,
-        payment_method='card',
-        transaction_reference=txn_ref,
-        payment_status='successful'
-    )
-    db.session.add(payment)
     db.session.commit()
-    
+
+    # --------------------------------------------------
+    # RESPONSE
+    # --------------------------------------------------
+
     return jsonify({
         'success': True,
-        'message': 'Booking confirmed successfully!',
-        'booking_reference': ref,
-        'booking_id': booking.booking_id,
-        'redirect_url': f"/confirmation?ref={ref}"
-    }), 201
 
+        'message': (
+            'Booking created successfully. '
+            'Please proceed to payment.'
+        ),
+
+        'booking_reference': ref,
+
+        'booking_id': booking.booking_id,
+
+        'listing_type': listing_type,
+
+        'days': days,
+
+        'daily_rate': rate,
+
+        'subtotal': round(
+            subtotal,
+            2
+        ),
+
+        'service_fee': service_fee,
+
+        'tax': tax,
+
+        'security_deposit': security_deposit,
+
+        'total_amount': total_amount,
+
+        'redirect_url': (
+            f"/payment?"
+            f"booking_id={booking.booking_id}"
+            f"&ref={ref}"
+        )
+    }), 201
 
 @api_bp.route('/reviews', methods=['POST'])
 def add_review():

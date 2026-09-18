@@ -3,6 +3,12 @@ from flask import Flask, session, g
 from config import Config
 from app.models import db, User
 
+try:
+    from flask_mail import Mail
+    mail = Mail()
+except ImportError:
+    mail = None
+
 def create_app(config_class=Config):
     app = Flask(
         __name__,
@@ -13,6 +19,8 @@ def create_app(config_class=Config):
     
     # Initialize extensions
     db.init_app(app)
+    if mail:
+        mail.init_app(app)
     
     # Context processor for session user and currency formatting
     @app.context_processor
