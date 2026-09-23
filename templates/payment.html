@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}Secure Payment — UniRent Kerala Gateway{% endblock %}
@@ -126,7 +127,7 @@
             font-weight: 700;
             text-transform: uppercase;
           ">
-            Razorpay Sandbox Simulator
+            Razorpay Test Mode
           </div>
 
           <h3 style="
@@ -134,7 +135,7 @@
             font-size: 1.3rem;
             margin: 0.2rem 0 0;
           ">
-            UniRent Kerala Escrow
+            UniRent Kerala Payment
           </h3>
         </div>
 
@@ -403,13 +404,14 @@
         <!-- =================================================
              PAYMENT FORM
         ================================================== -->
-        <form id="razorpay_demo_form">
+        <form id="razorpay_form">
 
           <input
             type="hidden"
             id="hidden_booking_ref"
             value="{{ booking.booking_reference }}"
           >
+
 
           <!-- =================================================
                PAYMENT METHOD
@@ -557,7 +559,7 @@
 
 
           <!-- =================================================
-               CARD SIMULATION
+               OLD PAYMENT DETAILS
           ================================================== -->
           <div id="method_details_card">
 
@@ -623,7 +625,7 @@
 
 
           <!-- =================================================
-               UPI SIMULATION
+               UPI DETAILS
           ================================================== -->
           <div
             id="method_details_upi"
@@ -665,7 +667,8 @@
                 font-size: 0.85rem;
                 color: var(--ur-muted);
               ">
-                Instant UPI auto-approval simulated via Razorpay Sandbox VPA.
+                Razorpay Test Mode payment options will appear
+                after clicking Pay Securely.
               </p>
 
             </div>
@@ -721,7 +724,7 @@
 
 
           <!-- =================================================
-               DEMO MODE NOTICE
+               TEST MODE NOTICE
           ================================================== -->
           <div style="
             background: #e8f4fd;
@@ -733,10 +736,9 @@
             margin-bottom: 1.8rem;
           ">
 
-            ℹ️ <strong>Demo Mode:</strong>
-            Real payment credentials are not required.
-            Clicking <strong>Pay Securely</strong> simulates an approved
-            transaction through the Razorpay test harness.
+            ℹ️ <strong>Razorpay Test Mode:</strong>
+            This payment uses Razorpay's test environment.
+            No real money will be charged.
 
           </div>
 
@@ -776,6 +778,10 @@
 
 {% block scripts %}
 
-<script src="{{ url_for('static', filename='js/booking.js') }}?v=4"></script>
+<!-- Razorpay Standard Checkout -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<!-- UniRent booking/payment JavaScript -->
+<script src="{{ url_for('static', filename='js/booking.js') }}?v=5"></script>
 
 {% endblock %}

@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}Create an Account — UniRent Kerala{% endblock %}
@@ -5,116 +6,740 @@
 {% block content %}
 
 <div class="auth-wrapper">
-  
+
   <!-- Left Side: Visual Heritage Showcase -->
+
   <div class="auth-sidebar-media">
+
     <div class="hero-badge" style="width: fit-content; margin-bottom: 1rem;">
       Kerala Heritage Community
     </div>
+
     <h2 style="color: var(--ur-white); font-size: 2.4rem; margin-bottom: 0.8rem;">
       Join the Kerala heritage network.
     </h2>
+
     <p style="color: #e5ddd3; font-size: 1.05rem; line-height: 1.6; max-width: 480px; margin-bottom: 0;">
       Whether you are embarking on an unforgettable Kerala road trip or offering an ancestral Nalukettu estate or rental vehicle to travelers, your story begins here.
     </p>
+
   </div>
 
   <!-- Right Side: Registration Form -->
+
   <div class="auth-form-side">
+
     <div class="auth-card" style="max-width: 520px;">
-      
+
       <div style="margin-bottom: 1.5rem;">
-        <span class="badge badge-delivery" style="margin-bottom: 0.5rem;">New Member Registration</span>
-        <h2 style="font-size: 2rem; margin-bottom: 0.3rem;">Create Account</h2>
-        <p style="color: var(--ur-muted); font-size: 0.92rem;">Select whether you are joining as a Traveler or as a Property/Vehicle Host.</p>
+
+        <span class="badge badge-delivery" style="margin-bottom: 0.5rem;">
+          New Member Registration
+        </span>
+
+        <h2 style="font-size: 2rem; margin-bottom: 0.3rem;">
+          Create Account
+        </h2>
+
+        <p style="color: var(--ur-muted); font-size: 0.92rem;">
+          Select whether you are joining as a Traveler or as a Property/Vehicle Host.
+        </p>
+
       </div>
 
-      <!-- Strict Dual Role Selector (Traveler vs Owner ONLY) -->
+      <!-- Strict Dual Role Selector -->
+
       <div class="auth-tabs">
-        <button type="button" class="auth-tab {% if not data or data.role != 'owner' %}active{% endif %}" data-role="traveler">
+
+        <button
+          type="button"
+          class="auth-tab {% if not data or data.role != 'owner' %}active{% endif %}"
+          data-role="traveler">
           Traveler
         </button>
-        <button type="button" class="auth-tab {% if data and data.role == 'owner' %}active{% endif %}" data-role="owner">
-           Owner
+
+        <button
+          type="button"
+          class="auth-tab {% if data and data.role == 'owner' %}active{% endif %}"
+          data-role="owner">
+          Owner
         </button>
+
       </div>
 
+
       <form action="{{ url_for('auth.register') }}" method="POST">
+
         <!-- Hidden input for selected role -->
-        <input type="hidden" name="role" id="selected_role_input" value="{{ data.role if data else 'traveler' }}">
+
+        <input
+          type="hidden"
+          name="role"
+          id="selected_role_input"
+          value="{{ data.role if data else 'traveler' }}"
+        >
+
+
+        <!-- Full Legal Name -->
 
         <div class="form-group">
-          <label for="reg_full_name">Full Legal Name</label>
-          <input type="text" id="reg_full_name" name="full_name" value="{{ data.full_name if data else '' }}" class="form-control" placeholder="e.g. Maya Nair" required>
+
+          <label for="reg_full_name">
+            Full Legal Name
+          </label>
+
+          <input
+            type="text"
+            id="reg_full_name"
+            name="full_name"
+            value="{{ data.full_name if data else '' }}"
+            class="form-control"
+            placeholder="e.g. Maya Nair"
+            required
+          >
+
         </div>
+
+
+        <!-- Email + Phone -->
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+
           <div class="form-group">
-            <label for="reg_email">Email Address</label>
-            <input type="email" id="reg_email" name="email" value="{{ data.email if data else '' }}" class="form-control" placeholder="maya@example.com" required>
+
+            <label for="reg_email">
+              Email Address
+            </label>
+
+            <input
+              type="email"
+              id="reg_email"
+              name="email"
+              value="{{ data.email if data else '' }}"
+              class="form-control"
+              placeholder="maya@example.com"
+              required
+            >
+
           </div>
+
+
           <div class="form-group">
-            <label for="reg_phone">Phone Number</label>
-            <input type="tel" id="reg_phone" name="phone" value="{{ data.phone if data else '' }}" class="form-control" placeholder="+91 98470 00000" required>
+
+            <label for="reg_phone">
+              Phone Number
+            </label>
+
+            <input
+              type="tel"
+              id="reg_phone"
+              name="phone"
+              value="{{ data.phone if data else '' }}"
+              class="form-control"
+              placeholder="+91 98470 00000"
+              required
+            >
+
           </div>
+
         </div>
 
-        <!-- Owner-specific fields (dynamically displayed when Owner tab is active) -->
-        <div id="owner_specific_fields" style="display: {% if data and data.role == 'owner' %}block{% else %}none{% endif %}; background: var(--ur-ivory); border: 1px solid var(--ur-border); border-radius: var(--radius-sm); padding: 1.2rem; margin-bottom: 1.25rem;">
-          <div style="font-size: 0.85rem; font-weight: 700; color: var(--ur-burnt-orange); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.8rem;">
+
+        <!-- ====================================================== -->
+        <!-- TRAVELER: IDENTITY VERIFICATION -->
+        <!-- ====================================================== -->
+
+        <div
+          id="traveler_verification_fields"
+          style="display: {% if not data or data.role != 'owner' %}block{% else %}none{% endif %};"
+        >
+
+          <div
+            style="font-size: 0.85rem; font-weight: 700; color: var(--ur-burnt-orange); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.8rem;"
+          >
+            Identity Verification
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="traveler_identity_document">
+              Identity Verification
+            </label>
+
+            <select
+              id="traveler_identity_document"
+              name="identity_document"
+              class="form-control"
+            >
+
+              <option value="">
+                Select an identity document
+              </option>
+
+              <option
+                value="passport"
+                {% if data and data.identity_document == 'passport' %}selected{% endif %}
+              >
+                Passport
+              </option>
+
+              <option
+                value="voter_id"
+                {% if data and data.identity_document == 'voter_id' %}selected{% endif %}
+              >
+                Voter ID
+              </option>
+
+              <option
+                value="driving_license"
+                {% if data and data.identity_document == 'driving_license' %}selected{% endif %}
+              >
+                Driving Licence
+              </option>
+
+              <option
+                value="pan_card"
+                {% if data and data.identity_document == 'pan_card' %}selected{% endif %}
+              >
+                PAN Card
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <!-- Dynamic Traveler ID Number -->
+
+          <div
+            id="identity_number_group"
+            class="form-group"
+            style="display: none;"
+          >
+
+            <label
+              for="identity_number"
+              id="identity_number_label"
+            >
+              Identity Number
+            </label>
+
+            <input
+              type="text"
+              id="identity_number"
+              name="identity_number"
+              value="{{ data.identity_number if data else '' }}"
+              class="form-control"
+              placeholder="Enter identity number"
+              autocomplete="off"
+            >
+
+          </div>
+
+        </div>
+
+
+        <!-- ====================================================== -->
+        <!-- OWNER: HOST INFORMATION + BUSINESS VERIFICATION -->
+        <!-- ====================================================== -->
+
+        <div
+          id="owner_specific_fields"
+          style="display: {% if data and data.role == 'owner' %}block{% else %}none{% endif %}; background: var(--ur-ivory); border: 1px solid var(--ur-border); border-radius: var(--radius-sm); padding: 1.2rem; margin-bottom: 1.25rem;"
+        >
+
+          <div
+            style="font-size: 0.85rem; font-weight: 700; color: var(--ur-burnt-orange); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.8rem;"
+          >
             Host Information
           </div>
-          
+
+
+          <!-- Business Name -->
+
           <div class="form-group">
-            <label for="owner_business_name">Heritage Estate / Fleet Business Name</label>
-            <input type="text" id="owner_business_name" name="business_name" value="{{ data.business_name if data else '' }}" class="form-control" placeholder="e.g. Nair Heritage Tharavadu & Fleet">
+
+            <label for="owner_business_name">
+              Heritage Estate / Fleet Business Name
+            </label>
+
+            <input
+              type="text"
+              id="owner_business_name"
+              name="business_name"
+              value="{{ data.business_name if data else '' }}"
+              class="form-control"
+              placeholder="e.g. Nair Heritage Tharavadu & Fleet"
+            >
+
           </div>
 
-          <div class="form-group" style="margin-bottom: 0;">
-            <label for="owner_district">Primary Kerala Operational District</label>
-            <select id="owner_district" name="district" class="form-control">
-              <option value="Ernakulam" {% if data and data.district == 'Ernakulam' %}selected{% endif %}>Ernakulam (Kochi / Aluva / Cherai)</option>
-              <option value="Thrissur" {% if data and data.district == 'Thrissur' %}selected{% endif %}>Thrissur (Cultural Capital / Chalakudy)</option>
+
+          <!-- District -->
+
+          <div class="form-group">
+
+            <label for="owner_district">
+              Primary Kerala Operational District
+            </label>
+
+            <select
+              id="owner_district"
+              name="district"
+              class="form-control"
+            >
+
+              <option
+                value="Ernakulam"
+                {% if data and data.district == 'Ernakulam' %}selected{% endif %}
+              >
+                Ernakulam (Kochi / Aluva / Cherai)
+              </option>
+
+              <option
+                value="Thrissur"
+                {% if data and data.district == 'Thrissur' %}selected{% endif %}
+              >
+                Thrissur (Cultural Capital / Chalakudy)
+              </option>
+
             </select>
+
           </div>
+
+
+          <!-- Business Verification -->
+
+          <div
+            style="font-size: 0.85rem; font-weight: 700; color: var(--ur-burnt-orange); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.8rem; margin-top: 1rem;"
+          >
+            Business Verification
+          </div>
+
+
+          <!-- License Type -->
+
+          <div class="form-group">
+
+            <label for="owner_license_type">
+              License Type
+            </label>
+
+            <select
+              id="owner_license_type"
+              name="license_type"
+              class="form-control"
+            >
+
+              <option value="">
+                Select a license type
+              </option>
+
+              <option
+                value="business_license"
+                {% if data and data.license_type == 'business_license' %}selected{% endif %}
+              >
+                Business License
+              </option>
+
+              <option
+                value="tourism_accommodation_license"
+                {% if data and data.license_type == 'tourism_accommodation_license' %}selected{% endif %}
+              >
+                Tourism / Accommodation License
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <!-- Dynamic Business License Number -->
+
+          <div
+            id="license_number_group"
+            class="form-group"
+            style="display: none; margin-bottom: 0;"
+          >
+
+            <label
+              for="license_number"
+              id="license_number_label"
+            >
+              License Number
+            </label>
+
+            <input
+              type="text"
+              id="license_number"
+              name="license_number"
+              value="{{ data.license_number if data else '' }}"
+              class="form-control"
+              placeholder="Enter license number"
+              autocomplete="off"
+            >
+
+          </div>
+
         </div>
+
+
+        <!-- ====================================================== -->
+        <!-- PASSWORD -->
+        <!-- ====================================================== -->
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+
           <div class="form-group">
-            <label for="reg_password">Password</label>
+
+            <label for="reg_password">
+              Password
+            </label>
+
             <div class="password-wrapper" style="position: relative;">
-              <input type="password" id="reg_password" name="password" class="form-control" placeholder="Min 6 characters" required>
+
+              <input
+                type="password"
+                id="reg_password"
+                name="password"
+                class="form-control"
+                placeholder="Min 6 characters"
+                required
+              >
+
             </div>
+
           </div>
+
+
           <div class="form-group">
-            <label for="reg_confirm_password">Confirm Password</label>
+
+            <label for="reg_confirm_password">
+              Confirm Password
+            </label>
+
             <div class="password-wrapper" style="position: relative;">
-              <input type="password" id="reg_confirm_password" name="confirm_password" class="form-control" placeholder="Confirm password" required>
+
+              <input
+                type="password"
+                id="reg_confirm_password"
+                name="confirm_password"
+                class="form-control"
+                placeholder="Confirm password"
+                required
+              >
+
             </div>
+
           </div>
+
         </div>
+
+
+        <!-- Terms -->
 
         <div style="margin-bottom: 1.5rem; font-size: 0.84rem; color: var(--ur-muted);">
-          By registering, you agree to UniRent’s <a href="#">Terms of Service</a>, <a href="#">Guest Guidelines</a>, and <a href="#">Heritage Preservation Standards</a>.
+
+          By registering, you agree to UniRent’s
+          <a href="#">Terms of Service</a>,
+          <a href="#">Guest Guidelines</a>, and
+          <a href="#">Heritage Preservation Standards</a>.
+
         </div>
 
-        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-bottom: 1.2rem;">
+
+        <!-- Submit -->
+
+        <button
+          type="submit"
+          class="btn btn-primary btn-block btn-lg"
+          style="margin-bottom: 1.2rem;"
+        >
           Complete Registration
         </button>
 
+
+        <!-- Login -->
+
         <div style="text-align: center; font-size: 0.92rem; color: var(--ur-muted);">
-          Already have an account? 
-          <a href="{{ url_for('auth.login') }}" style="font-weight: 600; color: var(--ur-burnt-orange);">Sign In</a>
+
+          Already have an account?
+
+          <a
+            href="{{ url_for('auth.login') }}"
+            style="font-weight: 600; color: var(--ur-burnt-orange);"
+          >
+            Sign In
+          </a>
+
         </div>
+
       </form>
 
     </div>
+
   </div>
 
 </div>
 
 {% endblock %}
 
+
 {% block scripts %}
+
 <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+
+    const roleButtons = document.querySelectorAll(".auth-tab");
+
+    const roleInput =
+      document.getElementById("selected_role_input");
+
+
+    /* Traveler fields */
+
+    const travelerVerificationFields =
+      document.getElementById("traveler_verification_fields");
+
+    const identityDocument =
+      document.getElementById("traveler_identity_document");
+
+    const identityNumberGroup =
+      document.getElementById("identity_number_group");
+
+    const identityNumber =
+      document.getElementById("identity_number");
+
+    const identityNumberLabel =
+      document.getElementById("identity_number_label");
+
+
+    /* Owner fields */
+
+    const ownerSpecificFields =
+      document.getElementById("owner_specific_fields");
+
+    const licenseType =
+      document.getElementById("owner_license_type");
+
+    const licenseNumberGroup =
+      document.getElementById("license_number_group");
+
+    const licenseNumber =
+      document.getElementById("license_number");
+
+    const licenseNumberLabel =
+      document.getElementById("license_number_label");
+
+
+    /* ==========================================================
+       TRAVELER IDENTITY VERIFICATION
+       ========================================================== */
+
+    function updateIdentityNumberField() {
+
+      const selectedDocument = identityDocument.value;
+
+
+      if (!selectedDocument) {
+
+        identityNumberGroup.style.display = "none";
+        identityNumber.required = false;
+        identityNumber.value = "";
+
+        return;
+      }
+
+
+      identityNumberGroup.style.display = "block";
+      identityNumber.required = true;
+
+
+      if (selectedDocument === "passport") {
+
+        identityNumberLabel.textContent = "Passport Number";
+        identityNumber.placeholder = "Enter passport number";
+
+      }
+
+      else if (selectedDocument === "voter_id") {
+
+        identityNumberLabel.textContent = "Voter ID Number";
+        identityNumber.placeholder = "Enter Voter ID number";
+
+      }
+
+      else if (selectedDocument === "driving_license") {
+
+        identityNumberLabel.textContent = "Driving Licence Number";
+        identityNumber.placeholder = "Enter driving licence number";
+
+      }
+
+      else if (selectedDocument === "pan_card") {
+
+        identityNumberLabel.textContent = "PAN Card Number";
+        identityNumber.placeholder = "Enter PAN Card number";
+
+      }
+
+    }
+
+
+    /* ==========================================================
+       OWNER BUSINESS VERIFICATION
+       ========================================================== */
+
+    function updateLicenseNumberField() {
+
+      const selectedLicense = licenseType.value;
+
+
+      if (!selectedLicense) {
+
+        licenseNumberGroup.style.display = "none";
+        licenseNumber.required = false;
+        licenseNumber.value = "";
+
+        return;
+      }
+
+
+      licenseNumberGroup.style.display = "block";
+      licenseNumber.required = true;
+
+
+      if (selectedLicense === "business_license") {
+
+        licenseNumberLabel.textContent = "Business License Number";
+        licenseNumber.placeholder = "Enter business license number";
+
+      }
+
+      else if (selectedLicense === "tourism_accommodation_license") {
+
+        licenseNumberLabel.textContent =
+          "Tourism / Accommodation License Number";
+
+        licenseNumber.placeholder =
+          "Enter tourism / accommodation license number";
+
+      }
+
+    }
+
+
+    /* ==========================================================
+       ROLE SWITCHING
+       ========================================================== */
+
+    function updateRoleFields(role) {
+
+      if (role === "traveler") {
+
+        /* Show Traveler verification */
+
+        travelerVerificationFields.style.display = "block";
+
+        identityDocument.required = true;
+
+
+        /* Hide Owner section */
+
+        ownerSpecificFields.style.display = "none";
+
+        licenseType.required = false;
+        licenseNumber.required = false;
+
+        licenseType.value = "";
+        licenseNumber.value = "";
+
+        licenseNumberGroup.style.display = "none";
+
+
+        updateIdentityNumberField();
+
+      }
+
+
+      else if (role === "owner") {
+
+        /* Hide Traveler verification */
+
+        travelerVerificationFields.style.display = "none";
+
+        identityDocument.required = false;
+        identityNumber.required = false;
+
+        identityDocument.value = "";
+        identityNumber.value = "";
+
+        identityNumberGroup.style.display = "none";
+
+
+        /* Show Owner section */
+
+        ownerSpecificFields.style.display = "block";
+
+        updateLicenseNumberField();
+
+      }
+
+    }
+
+
+    /* ==========================================================
+       ROLE BUTTON EVENTS
+       ========================================================== */
+
+    roleButtons.forEach(function (button) {
+
+      button.addEventListener("click", function () {
+
+        const selectedRole =
+          this.getAttribute("data-role");
+
+        roleInput.value = selectedRole;
+
+        updateRoleFields(selectedRole);
+
+      });
+
+    });
+
+
+    /* ==========================================================
+       TRAVELER DOCUMENT SELECTION
+       ========================================================== */
+
+    identityDocument.addEventListener("change", function () {
+
+      updateIdentityNumberField();
+
+    });
+
+
+    /* ==========================================================
+       OWNER LICENSE SELECTION
+       ========================================================== */
+
+    licenseType.addEventListener("change", function () {
+
+      updateLicenseNumberField();
+
+    });
+
+
+    /* ==========================================================
+       INITIAL PAGE LOAD
+       ========================================================== */
+
+    updateRoleFields(roleInput.value);
+
+  });
+</script>
+
 {% endblock %}

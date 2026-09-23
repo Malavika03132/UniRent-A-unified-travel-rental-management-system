@@ -14,7 +14,11 @@ from flask import (
 
 from datetime import datetime
 import uuid
+import hmac
+import hashlib
 from io import BytesIO
+
+import razorpay
 
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
@@ -34,13 +38,25 @@ main_bp = Blueprint('main', __name__)
 
 
 # ============================================================================
+# RAZORPAY CLIENT
+# ============================================================================
+
+def get_razorpay_client():
+    return razorpay.Client(
+        auth=(
+            current_app.config['RAZORPAY_KEY_ID'],
+            current_app.config['RAZORPAY_KEY_SECRET']
+        )
+    )
+
+
+# ============================================================================
 # HOME
 # ============================================================================
 
 @main_bp.route('/')
 def index():
 
-    # Only show approved properties and vehicles
     featured_stays = (
         Property.query
         .filter_by(approval_status='approved')
@@ -147,7 +163,6 @@ def stays():
         )
 
     if property_type:
-
         query = query.filter(
             Property.property_type.ilike(
                 f"%{property_type}%"
@@ -155,25 +170,21 @@ def stays():
         )
 
     if min_price is not None:
-
         query = query.filter(
             Property.price_per_night >= min_price
         )
 
     if max_price is not None:
-
         query = query.filter(
             Property.price_per_night <= max_price
         )
 
     if guests:
-
         query = query.filter(
             Property.guest_capacity >= guests
         )
 
     if search_q:
-
         query = query.filter(
             (Property.property_name.ilike(f"%{search_q}%")) |
             (Property.address.ilike(f"%{search_q}%")) |
@@ -567,7 +578,7 @@ def payment():
 
     booking_obj = None
 
-    # Find booking by ID or reference
+    # Find booking by ID
     if booking_id:
 
         booking_obj = db.session.get(
@@ -575,6 +586,7 @@ def payment():
             booking_id
         )
 
+    # Find booking by reference
     elif booking_ref:
 
         booking_obj = (
@@ -596,8 +608,7 @@ def payment():
             url_for('main.index')
         )
 
-    # Only redirect to confirmation if booking
-    # is genuinely already paid and confirmed
+    # Check if booking is already genuinely paid
     is_already_paid = (
         booking_obj.booking_status == 'confirmed'
         and booking_obj.payment is not None
@@ -623,7 +634,6 @@ def payment():
             )
         )
 
-    # Show Razorpay sandbox payment page
     return render_template(
         'payment.html',
         booking=booking_obj
@@ -631,8 +641,154 @@ def payment():
 
 
 # ============================================================================
+# RAZORPAY - CREATE ORDER
+# ============================================================================
+
+@main_bp.route(
+    '/api/create-order',
+    methods=['POST']
+)
+def create_razorpay_order():
+
+    try:
+
+        data = request.get_json(
+            silent=True
+        ) or {}
+
+        booking_ref = str(
+            data.get(
+                'booking_reference',
+                ''
+            )
+        ).strip()
+
+        if not booking_ref:
+
+            return jsonify({
+                'success': False,
+                'message': 'Booking reference is required.'
+            }), 400
+
+        booking_obj = (
+            Booking.query
+            .filter_by(
+                booking_reference=booking_ref
+            )
+            .first()
+        )
+
+        if not booking_obj:
+
+            return jsonify({
+                'success': False,
+                'message': 'Booking record not found.'
+            }), 404
+
+        # Prevent creation of another Razorpay order
+        # for a booking that has already been paid.
+        if (
+            booking_obj.booking_status == 'confirmed'
+            and booking_obj.payment is not None
+            and booking_obj.payment.payment_status in (
+                'successful',
+                'approved',
+                'completed'
+            )
+        ):
+
+            return jsonify({
+                'success': False,
+                'message': 'This booking has already been paid.'
+            }), 400
+
+        # Amount MUST come from database.
+        amount_paise = int(
+            round(
+                float(booking_obj.total_amount) * 100
+            )
+        )
+
+        if amount_paise < 100:
+
+            return jsonify({
+                'success': False,
+                'message': 'Payment amount must be at least ₹1.'
+            }), 400
+
+        client = get_razorpay_client()
+
+        razorpay_order = client.order.create({
+            'amount': amount_paise,
+            'currency': 'INR',
+            'receipt': booking_obj.booking_reference
+        })
+
+        return jsonify({
+            'success': True,
+            'order_id': razorpay_order['id'],
+            'amount': amount_paise,
+            'currency': 'INR',
+            'key_id': current_app.config[
+                'RAZORPAY_KEY_ID'
+            ],
+            'booking_reference':
+                booking_obj.booking_reference
+        }), 200
+
+    except razorpay.errors.BadRequestError as error:
+
+        print(
+            'Razorpay BadRequestError:',
+            str(error)
+        )
+
+        return jsonify({
+            'success': False,
+            'message': 'Razorpay rejected the order request.',
+            'error': str(error)
+        }), 400
+
+    except razorpay.errors.AuthenticationError as error:
+
+        print(
+            'Razorpay AuthenticationError:',
+            str(error)
+        )
+
+        return jsonify({
+            'success': False,
+            'message': 'Razorpay authentication failed.',
+            'error': str(error)
+        }), 401
+
+    except Exception as error:
+
+        print(
+            'Razorpay order creation error:',
+            str(error)
+        )
+
+        return jsonify({
+            'success': False,
+            'message': 'Unable to create Razorpay order.',
+            'error': str(error)
+        }), 500
+
+
+# ============================================================================
 # PAYMENT PROCESS
-# Razorpay-style DEMO / SANDBOX payment
+# EXISTING DEMO / SANDBOX PAYMENT
+# ============================================================================
+#
+# This route is kept because your existing UniRent project already uses it.
+# The new Razorpay Standard Checkout will use:
+#
+#     /api/create-order
+#     /api/verify-payment
+#
+# instead.
+#
 # ============================================================================
 
 @main_bp.route(
@@ -761,10 +917,12 @@ def process_demo_payment():
             return jsonify({
                 'success': True,
                 'already_paid': True,
-                'booking_id': booking_obj.booking_id,
+                'booking_id':
+                    booking_obj.booking_id,
                 'booking_reference':
                     booking_obj.booking_reference,
-                'transaction_id': txn_id,
+                'transaction_id':
+                    txn_id,
                 'message':
                     'Payment has already been completed.'
             }), 200
@@ -819,7 +977,7 @@ def process_demo_payment():
             )
 
         # ----------------------------------------------------------
-        # Update booking status
+        # Confirm booking
         # ----------------------------------------------------------
 
         booking_obj.booking_status = (
@@ -1175,6 +1333,286 @@ Heritage Stays & Vehicle Rentals
 
 
 # ============================================================================
+# RAZORPAY - VERIFY PAYMENT
+# ============================================================================
+
+@main_bp.route(
+    '/api/verify-payment',
+    methods=['POST']
+)
+def verify_razorpay_payment():
+
+    try:
+
+        data = request.get_json(
+            silent=True
+        ) or {}
+
+        razorpay_order_id = str(
+            data.get(
+                'razorpay_order_id',
+                ''
+            )
+        ).strip()
+
+        razorpay_payment_id = str(
+            data.get(
+                'razorpay_payment_id',
+                ''
+            )
+        ).strip()
+
+        razorpay_signature = str(
+            data.get(
+                'razorpay_signature',
+                ''
+            )
+        ).strip()
+
+        booking_ref = str(
+            data.get(
+                'booking_reference',
+                ''
+            )
+        ).strip()
+
+        # ----------------------------------------------------------
+        # Validate required fields
+        # ----------------------------------------------------------
+
+        if not all([
+            razorpay_order_id,
+            razorpay_payment_id,
+            razorpay_signature,
+            booking_ref
+        ]):
+
+            return jsonify({
+                'success': False,
+                'message':
+                    'Required payment verification fields are missing.'
+            }), 400
+
+        # ----------------------------------------------------------
+        # Find booking
+        # ----------------------------------------------------------
+
+        booking_obj = (
+            Booking.query
+            .filter_by(
+                booking_reference=booking_ref
+            )
+            .first()
+        )
+
+        if not booking_obj:
+
+            return jsonify({
+                'success': False,
+                'message': 'Booking record not found.'
+            }), 404
+
+        # ----------------------------------------------------------
+        # Generate HMAC SHA256 signature
+        # ----------------------------------------------------------
+
+        message = (
+            razorpay_order_id
+            + '|'
+            + razorpay_payment_id
+        )
+
+        generated_signature = hmac.new(
+            current_app.config[
+                'RAZORPAY_KEY_SECRET'
+            ].encode('utf-8'),
+            message.encode('utf-8'),
+            hashlib.sha256
+        ).hexdigest()
+
+        # ----------------------------------------------------------
+        # Safely compare signatures
+        # ----------------------------------------------------------
+
+        if not hmac.compare_digest(
+            generated_signature,
+            razorpay_signature
+        ):
+
+            print(
+                'Razorpay signature verification failed.'
+            )
+
+            return jsonify({
+                'success': False,
+                'message':
+                    'Payment signature verification failed.'
+            }), 400
+
+        # ----------------------------------------------------------
+        # Check existing successful payment
+        # ----------------------------------------------------------
+
+        existing_payment = booking_obj.payment
+
+        if (
+            existing_payment
+            and existing_payment.payment_status
+            in (
+                'successful',
+                'approved',
+                'completed'
+            )
+        ):
+
+            return jsonify({
+                'success': True,
+                'already_paid': True,
+                'booking_id':
+                    booking_obj.booking_id,
+                'booking_reference':
+                    booking_obj.booking_reference,
+                'transaction_id':
+                    existing_payment.transaction_reference,
+                'message':
+                    'Payment has already been verified.'
+            }), 200
+
+        # ----------------------------------------------------------
+        # Create or update Payment record
+        # ----------------------------------------------------------
+
+        if existing_payment:
+
+            payment_record = existing_payment
+
+            payment_record.amount = (
+                booking_obj.total_amount
+            )
+
+            payment_record.payment_method = (
+                'razorpay'
+            )
+
+            payment_record.transaction_reference = (
+                razorpay_payment_id
+            )
+
+            payment_record.payment_status = (
+                'successful'
+            )
+
+            payment_record.payment_date = (
+                datetime.utcnow()
+            )
+
+            payment_record.gateway_response = (
+                f'Razorpay Order: '
+                f'{razorpay_order_id}'
+            )
+
+        else:
+
+            payment_record = Payment(
+                booking_id=booking_obj.booking_id,
+                amount=booking_obj.total_amount,
+                payment_method='razorpay',
+                transaction_reference=razorpay_payment_id,
+                payment_status='successful',
+                payment_date=datetime.utcnow(),
+                gateway_response=(
+                    f'Razorpay Order: '
+                    f'{razorpay_order_id}'
+                )
+            )
+
+            db.session.add(
+                payment_record
+            )
+
+        # ----------------------------------------------------------
+        # Confirm booking
+        # ----------------------------------------------------------
+
+        booking_obj.booking_status = (
+            'confirmed'
+        )
+
+        # ----------------------------------------------------------
+        # Save to MySQL
+        # ----------------------------------------------------------
+
+        db.session.commit()
+
+        print(
+            '============================================================'
+        )
+
+        print(
+            'RAZORPAY PAYMENT VERIFIED SUCCESSFULLY'
+        )
+
+        print(
+            'Booking ID:',
+            booking_obj.booking_id
+        )
+
+        print(
+            'Booking Ref:',
+            booking_obj.booking_reference
+        )
+
+        print(
+            'Razorpay Order ID:',
+            razorpay_order_id
+        )
+
+        print(
+            'Razorpay Payment ID:',
+            razorpay_payment_id
+        )
+
+        print(
+            '============================================================'
+        )
+
+        return jsonify({
+
+            'success': True,
+
+            'booking_id':
+                booking_obj.booking_id,
+
+            'booking_reference':
+                booking_obj.booking_reference,
+
+            'transaction_id':
+                razorpay_payment_id,
+
+            'message':
+                'Payment verified successfully.'
+
+        }), 200
+
+    except Exception as error:
+
+        db.session.rollback()
+
+        print(
+            'Razorpay verification error:',
+            str(error)
+        )
+
+        return jsonify({
+            'success': False,
+            'message':
+                'Unable to verify payment.',
+            'error':
+                str(error)
+        }), 500
+
+
+# ============================================================================
 # BOOKING CONFIRMATION
 # ============================================================================
 
@@ -1192,10 +1630,7 @@ def confirmation():
 
     booking_obj = None
 
-    # ----------------------------------------------------------
     # Find by booking ID
-    # ----------------------------------------------------------
-
     if booking_id:
 
         booking_obj = db.session.get(
@@ -1203,10 +1638,7 @@ def confirmation():
             booking_id
         )
 
-    # ----------------------------------------------------------
-    # Or find by booking reference
-    # ----------------------------------------------------------
-
+    # Find by booking reference
     elif booking_ref:
 
         booking_obj = (
@@ -1216,10 +1648,6 @@ def confirmation():
             )
             .first()
         )
-
-    # ----------------------------------------------------------
-    # Booking not found
-    # ----------------------------------------------------------
 
     if not booking_obj:
 
@@ -1231,10 +1659,6 @@ def confirmation():
         return redirect(
             url_for('main.index')
         )
-
-    # ----------------------------------------------------------
-    # Confirmation page
-    # ----------------------------------------------------------
 
     return render_template(
         'confirmation.html',

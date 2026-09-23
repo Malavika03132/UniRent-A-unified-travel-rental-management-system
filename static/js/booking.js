@@ -1,6 +1,7 @@
+
 document.addEventListener('DOMContentLoaded', () => {
     initBookingPriceCalculator();
-    initPaymentSimulator();
+    initRazorpayPayment();
 });
 
 
@@ -42,7 +43,9 @@ function initBookingPriceCalculator() {
         const end = new Date(endValue);
 
         const difference = end - start;
-        const days = Math.ceil(difference / (1000 * 60 * 60 * 24));
+        const days = Math.ceil(
+            difference / (1000 * 60 * 60 * 24)
+        );
 
         if (days <= 0) {
             return;
@@ -82,197 +85,227 @@ function initBookingPriceCalculator() {
 
 
 /* =========================================================
-   PAYMENT METHOD SWITCHING
+   RAZORPAY TEST CHECKOUT
    ========================================================= */
-function initPaymentMethodSwitcher() {
-    const methodCards = document.querySelectorAll('.payment-method-card');
+function initRazorpayPayment() {
 
-    const cardDetails = document.getElementById('method_details_card');
-    const upiDetails = document.getElementById('method_details_upi');
-    const netbankingDetails = document.getElementById('method_details_netbanking');
-
-    if (!methodCards.length) {
-        return;
-    }
-
-    methodCards.forEach(card => {
-        const radio = card.querySelector('input[type="radio"]');
-
-        card.addEventListener('click', () => {
-            if (radio) {
-                radio.checked = true;
-            }
-
-            methodCards.forEach(item => {
-                item.style.border = '1px solid var(--ur-border)';
-                item.style.background = 'var(--ur-white)';
-            });
-
-            card.style.border = '2px solid var(--ur-burnt-orange)';
-            card.style.background = '#fffdf8';
-
-            const selectedMethod = radio ? radio.value : '';
-
-            if (cardDetails) {
-                cardDetails.style.display =
-                    selectedMethod === 'card' ? 'block' : 'none';
-            }
-
-            if (upiDetails) {
-                upiDetails.style.display =
-                    selectedMethod === 'upi' ? 'block' : 'none';
-            }
-
-            if (netbankingDetails) {
-                netbankingDetails.style.display =
-                    selectedMethod === 'netbanking' ? 'block' : 'none';
-            }
-        });
-    });
-}
-
-
-/* =========================================================
-   PAYMENT SIMULATOR
-   ========================================================= */
-function initPaymentSimulator() {
-    const paymentForm = document.getElementById('razorpay_demo_form');
+    const paymentForm = document.getElementById('razorpay_form');
 
     if (!paymentForm) {
         return;
     }
 
-    initPaymentMethodSwitcher();
-
     const payButton = document.getElementById('rzp_pay_submit_btn');
-    const bookingRefInput = document.getElementById('hidden_booking_ref');
-    const successMessage = document.getElementById('payment_success_message');
+    const bookingRefInput =
+        document.getElementById('hidden_booking_ref');
 
     if (!payButton || !bookingRefInput) {
         return;
     }
 
     paymentForm.addEventListener('submit', async (event) => {
+
         event.preventDefault();
 
         const bookingReference = bookingRefInput.value;
 
-        const selectedMethod =
-            paymentForm.querySelector('input[name="pay_method"]:checked');
+        if (!bookingReference) {
+            alert('Booking reference is missing.');
+            return;
+        }
 
-        const paymentMethod = selectedMethod
-            ? selectedMethod.value
-            : 'card';
-
-        /* Disable button while processing */
+        /* Disable button */
         payButton.disabled = true;
+
         payButton.innerHTML = `
             <span style="display:inline-flex;align-items:center;gap:0.6rem;">
                 <span class="payment-spinner"></span>
-                Processing Payment...
+                Starting Secure Payment...
             </span>
         `;
 
         try {
-            const response = await fetch('/payment/process', {
+
+            /* =====================================================
+               STEP 1 — CREATE RAZORPAY ORDER
+               ===================================================== */
+
+            const orderResponse = await fetch('/api/create-order', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    booking_reference: bookingReference,
-                    payment_method: paymentMethod
+                    booking_reference: bookingReference
                 })
             });
 
-            const result = await response.json();
+            const orderResult = await orderResponse.json();
 
-            if (!response.ok || !result.success) {
+            if (!orderResponse.ok || !orderResult.success) {
                 throw new Error(
-                    result.error || 'Payment could not be completed.'
+                    orderResult.error ||
+                    'Unable to create Razorpay order.'
                 );
             }
 
-            /* ==========================================
-               PAYMENT SUCCESS
-               ========================================== */
 
-            if (successMessage) {
-                successMessage.innerHTML = `
-                    <div class="payment-success-card">
+            /* =====================================================
+               STEP 2 — OPEN RAZORPAY CHECKOUT
+               ===================================================== */
 
-                        <div class="payment-success-icon">
-                            ✓
-                        </div>
+            const options = {
 
-                        <h2>Payment Successful</h2>
+                key: orderResult.key_id,
 
-                        <p class="payment-success-text">
-                            Your payment has been received and your booking
-                            has been confirmed successfully.
-                        </p>
+                amount: orderResult.amount,
 
-                        <div class="payment-transaction-box">
-                            <span>Transaction ID</span>
-                            <strong>
-                                ${result.transaction_id || 'TXN-RPY-DEMO'}
-                            </strong>
-                        </div>
+                currency: orderResult.currency,
 
-                        <button
-                            type="button"
-                            id="continue_to_confirmation"
-                            class="btn btn-primary btn-lg"
-                        >
-                            Continue to Confirmation
-                        </button>
+                name: 'UniRent',
 
-                    </div>
-                `;
+                description: 'UniRent Kerala Rental Booking',
 
-                successMessage.style.display = 'block';
-            }
+                order_id: orderResult.order_id,
 
-            /* Hide the payment form controls */
-            const paymentOptions =
-                paymentForm.querySelectorAll(
-                    'input, select, .form-group, .payment-method-card'
-                );
+                handler: async function (response) {
 
-            paymentOptions.forEach(element => {
-                element.style.pointerEvents = 'none';
-            });
+                    try {
 
-            /* Hide everything except success message */
-            const formChildren = Array.from(paymentForm.children);
+                        /* =========================================
+                           STEP 3 — VERIFY PAYMENT
+                           ========================================= */
 
-            formChildren.forEach(element => {
-                if (element.id !== 'payment_success_message') {
-                    element.style.display = 'none';
+                        const verifyResponse = await fetch(
+                            '/api/verify-payment',
+                            {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+
+                                    razorpay_payment_id:
+                                        response.razorpay_payment_id,
+
+                                    razorpay_order_id:
+                                        response.razorpay_order_id,
+
+                                    razorpay_signature:
+                                        response.razorpay_signature,
+
+                                    booking_reference:
+                                        bookingReference
+
+                                })
+                            }
+                        );
+
+                        const verifyResult =
+                            await verifyResponse.json();
+
+                        if (
+                            !verifyResponse.ok ||
+                            !verifyResult.success
+                        ) {
+                            throw new Error(
+                                verifyResult.error ||
+                                'Payment verification failed.'
+                            );
+                        }
+
+
+                        /* =========================================
+                           STEP 4 — PAYMENT SUCCESS
+                           ========================================= */
+
+                        window.location.href =
+                            `/confirmation?booking_id=${verifyResult.booking_id}`;
+
+                    } catch (error) {
+
+                        console.error(
+                            'Payment verification error:',
+                            error
+                        );
+
+                        alert(
+                            error.message ||
+                            'Payment verification failed.'
+                        );
+
+                        payButton.disabled = false;
+                        payButton.innerHTML =
+                            'Pay Securely';
+                    }
+                },
+
+
+                /* =================================================
+                   PAYMENT FAILED / CHECKOUT CLOSED
+                   ================================================= */
+
+                modal: {
+                    ondismiss: function () {
+
+                        payButton.disabled = false;
+
+                        payButton.innerHTML =
+                            'Pay Securely';
+                    }
                 }
-            });
 
-            /* Make success button available */
-            const continueButton =
-                document.getElementById('continue_to_confirmation');
+            };
 
-            if (continueButton) {
-                continueButton.addEventListener('click', () => {
-                    window.location.href =
-                        `/confirmation?booking_id=${result.booking_id}`;
-                });
-            }
+
+            /* =====================================================
+               STEP 5 — OPEN RAZORPAY
+               ===================================================== */
+
+            const razorpay =
+                new Razorpay(options);
+
+            razorpay.on(
+                'payment.failed',
+                function (response) {
+
+                    console.error(
+                        'Razorpay payment failed:',
+                        response.error
+                    );
+
+                    alert(
+                        response.error.description ||
+                        'Payment failed. Please try again.'
+                    );
+
+                    payButton.disabled = false;
+
+                    payButton.innerHTML =
+                        'Pay Securely';
+                }
+            );
+
+            razorpay.open();
+
 
         } catch (error) {
-            console.error('Payment error:', error);
 
-            payButton.disabled = false;
-            payButton.innerHTML = 'Pay Securely';
+            console.error(
+                'Razorpay checkout error:',
+                error
+            );
 
             alert(
                 error.message ||
-                'Something went wrong while processing the payment.'
+                'Unable to start payment.'
             );
+
+            payButton.disabled = false;
+
+            payButton.innerHTML =
+                'Pay Securely';
         }
     });
 }
+
