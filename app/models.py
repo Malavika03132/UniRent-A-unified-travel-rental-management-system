@@ -1,4 +1,3 @@
-
 import json
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
@@ -87,7 +86,12 @@ class User(db.Model):
 class Owner(db.Model):
     __tablename__ = 'owners'
 
-    owner_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    owner_id = db.Column(
+        db.Integer,
+        primary_key=True,
+        autoincrement=True
+    )
+
     user_id = db.Column(
         db.Integer,
         db.ForeignKey('users.user_id', ondelete='CASCADE'),
@@ -95,7 +99,11 @@ class Owner(db.Model):
         nullable=False
     )
 
-    business_name = db.Column(db.String(150), nullable=True)
+    business_name = db.Column(
+        db.String(150),
+        nullable=True
+    )
+
     district = db.Column(
         db.String(50),
         nullable=False,
@@ -108,9 +116,20 @@ class Owner(db.Model):
         default='verified'
     )
 
-    bank_account = db.Column(db.String(100), nullable=True)
-    bio = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    bank_account = db.Column(
+        db.String(100),
+        nullable=True
+    )
+
+    bio = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
 
     # Relationships
     properties = db.relationship(
@@ -143,19 +162,23 @@ class Owner(db.Model):
         return {
             'owner_id': self.owner_id,
             'user_id': self.user_id,
+
             'full_name': (
                 self.user.full_name
                 if self.user
                 else None
             ),
+
             'email': (
                 self.user.email
                 if self.user
                 else None
             ),
+
             'business_name': self.business_name,
             'district': self.district,
             'kyc_status': self.kyc_status,
+
             'created_at': (
                 self.created_at.strftime('%Y-%m-%d')
                 if self.created_at
@@ -456,6 +479,7 @@ class Vehicle(db.Model):
     # Only applicable to vehicle rentals.
     # Default deposit = Rs. 2,000
     # --------------------------------------------------
+
     security_deposit = db.Column(
         db.Float,
         nullable=False,
@@ -601,7 +625,7 @@ class Vehicle(db.Model):
             'description': self.description,
             'price_per_day': self.price_per_day,
 
-            # NEW: Refundable vehicle deposit
+            # Refundable vehicle deposit
             'security_deposit': self.security_deposit,
 
             'district': self.district,
@@ -710,6 +734,7 @@ class Booking(db.Model):
     # Property booking = 0
     # Vehicle booking = vehicle's security deposit
     # --------------------------------------------------
+
     security_deposit = db.Column(
         db.Float,
         nullable=False,
@@ -729,6 +754,35 @@ class Booking(db.Model):
 
     special_requests = db.Column(
         db.Text,
+        nullable=True
+    )
+
+    # --------------------------------------------------
+    # BOOKING-TIME TRAVELER VERIFICATION
+    #
+    # PROPERTY BOOKING:
+    #   identity_type = PAN Card / Passport / Voter ID
+    #   identity_number = corresponding ID number
+    #
+    # VEHICLE BOOKING:
+    #   driver_license_number = driver's license number
+    #
+    # These details are collected during booking,
+    # NOT during traveler registration.
+    # --------------------------------------------------
+
+    identity_type = db.Column(
+        db.String(30),
+        nullable=True
+    )
+
+    identity_number = db.Column(
+        db.String(100),
+        nullable=True
+    )
+
+    driver_license_number = db.Column(
+        db.String(100),
         nullable=True
     )
 
@@ -815,7 +869,6 @@ class Booking(db.Model):
             'service_fee': self.service_fee,
             'tax_amount': self.tax_amount,
 
-            # NEW
             'security_deposit': self.security_deposit,
 
             'total_amount': self.total_amount,
@@ -1158,4 +1211,3 @@ class Complaint(db.Model):
                 else None
             )
         }
-

@@ -1,21 +1,54 @@
 {% extends "dashboard_base.html" %}
 
 {% block title %}My Vehicles — Owner Portal{% endblock %}
+
 {% block page_title %}Rental Fleet Directory{% endblock %}
 
 {% block dashboard_content %}
 
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+<div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:2rem;
+">
+
   <div>
-    <h3 style="font-size: 1.25rem; margin: 0 0 0.3rem;">Mobility Fleet Under Your Management</h3>
-    <p style="color: var(--ur-muted); font-size: 0.88rem; margin: 0;">Manage your fleet of cars, touring bikes, and urban scooters.</p>
+
+    <h3 style="
+        font-size:1.25rem;
+        margin:0 0 0.3rem;
+    ">
+      Mobility Fleet Under Your Management
+    </h3>
+
+    <p style="
+        color:var(--ur-muted);
+        font-size:0.88rem;
+        margin:0;
+    ">
+      Manage your fleet of cars, touring bikes,
+      and urban scooters.
+    </p>
+
   </div>
-  <a href="{{ url_for('owner.add_vehicle') }}" class="btn btn-primary btn-sm">+ Add New Vehicle</a>
+
+  <a
+    href="{{ url_for('owner.add_vehicle') }}"
+    class="btn btn-primary btn-sm"
+  >
+    + Add New Vehicle
+  </a>
+
 </div>
 
+
 <div class="table-responsive">
+
   <table class="table">
+
     <thead>
+
       <tr>
         <th>Vehicle Details</th>
         <th>Category & Model</th>
@@ -25,57 +58,774 @@
         <th>Approval Status</th>
         <th>Action</th>
       </tr>
+
     </thead>
+
+
     <tbody>
+
       {% for v in vehicles %}
-        <tr>
-          <td>
-            <div style="display: flex; gap: 0.8rem; align-items: center;">
-              <img src="{{ v.featured_image }}" alt="Thumb" style="width: 55px; height: 45px; border-radius: 4px; object-fit: cover;">
-              <div>
-                <strong style="color: var(--ur-brown);">{{ v.vehicle_name }}</strong>
-                <div style="font-size: 0.78rem; color: var(--ur-muted);">{{ v.specs_dict.get('transmission') }} • {{ v.specs_dict.get('fuel') }}</div>
+
+      <!-- ================================================== -->
+      <!-- VEHICLE ROW -->
+      <!-- ================================================== -->
+
+      <tr>
+
+        <!-- VEHICLE DETAILS -->
+        <td>
+
+          <div style="
+              display:flex;
+              gap:0.8rem;
+              align-items:center;
+          ">
+
+            <img
+              src="{{ v.featured_image }}"
+              alt="{{ v.vehicle_name }}"
+              style="
+                width:55px;
+                height:45px;
+                border-radius:4px;
+                object-fit:cover;
+              "
+            >
+
+            <div>
+
+              <strong style="
+                  color:var(--ur-brown);
+              ">
+                {{ v.vehicle_name }}
+              </strong>
+
+              <div style="
+                  font-size:0.78rem;
+                  color:var(--ur-muted);
+              ">
+                {{ v.specs_dict.get('transmission') }}
+                •
+                {{ v.specs_dict.get('fuel') }}
               </div>
+
             </div>
-          </td>
-          <td>
-            <div>{{ v.vehicle_type|capitalize }}</div>
-            <div style="font-size: 0.78rem; color: var(--ur-muted);">{{ v.model }}</div>
-          </td>
-          <td>
-            <strong>{{ v.district }}</strong>
-            <div style="font-size: 0.78rem; color: var(--ur-muted);">{{ v.pickup_location[:25] }}...</div>
-          </td>
-          <td>
-            {% if v.delivery_available %}
-              <span class="badge badge-delivery">Pickup or Delivery</span>
-            {% else %}
-              <span class="badge badge-pickup">Pickup Only</span>
+
+          </div>
+
+        </td>
+
+
+        <!-- CATEGORY & MODEL -->
+        <td>
+
+          <div>
+            {{ v.vehicle_type|capitalize }}
+          </div>
+
+          <div style="
+              font-size:0.78rem;
+              color:var(--ur-muted);
+          ">
+            {{ v.model }}
+          </div>
+
+        </td>
+
+
+        <!-- DISTRICT & HUB -->
+        <td>
+
+          <strong>
+            {{ v.district }}
+          </strong>
+
+          <div style="
+              font-size:0.78rem;
+              color:var(--ur-muted);
+          ">
+
+            {% if v.pickup_location %}
+
+              {{ v.pickup_location[:25] }}
+
+              {% if v.pickup_location|length > 25 %}
+                ...
+              {% endif %}
+
             {% endif %}
-          </td>
-          <td><strong style="color: var(--ur-burnt-orange);">{{ format_currency(v.price_per_day) }}</strong></td>
-          <td>
-            {% if v.approval_status == 'approved' %}
-              <span class="badge badge-approved">Approved</span>
-            {% elif v.approval_status == 'pending' %}
-              <span class="badge badge-pending">Pending Approval</span>
+
+          </div>
+
+        </td>
+
+
+        <!-- DELIVERY -->
+        <td>
+
+          {% if v.delivery_available %}
+
+            <span class="badge badge-delivery">
+              Pickup or Delivery
+            </span>
+
+          {% else %}
+
+            <span class="badge badge-pickup">
+              Pickup Only
+            </span>
+
+          {% endif %}
+
+        </td>
+
+
+        <!-- PRICE -->
+        <td>
+
+          <strong style="
+              color:var(--ur-burnt-orange);
+          ">
+            {{ format_currency(v.price_per_day) }}
+          </strong>
+
+        </td>
+
+
+        <!-- APPROVAL -->
+        <td>
+
+          {% if v.approval_status == 'approved' %}
+
+            <span class="badge badge-approved">
+              Approved
+            </span>
+
+          {% elif v.approval_status == 'pending' %}
+
+            <span class="badge badge-pending">
+              Pending Approval
+            </span>
+
+          {% else %}
+
+            <span
+              class="badge badge-rejected"
+              title="{{ v.rejection_reason or 'Rejected by Admin' }}"
+            >
+              Rejected
+            </span>
+
+          {% endif %}
+
+        </td>
+
+
+        <!-- ACTIONS -->
+        <td>
+
+          <div style="
+              display:flex;
+              gap:0.4rem;
+              flex-wrap:wrap;
+          ">
+
+
+            <!-- VIEW -->
+            <a
+              href="{{ url_for(
+                'main.vehicle_details',
+                vehicle_id=v.vehicle_id
+              ) }}"
+              class="btn btn-outline btn-sm"
+              target="_blank"
+            >
+              View
+            </a>
+
+
+            <!-- EDIT -->
+            <details>
+
+              <summary
+                class="btn btn-outline btn-sm"
+                style="
+                  cursor:pointer;
+                  display:inline-block;
+                  list-style:none;
+                "
+              >
+                Edit
+              </summary>
+
+
+              <!-- ========================================== -->
+              <!-- EDIT VEHICLE FORM -->
+              <!-- ========================================== -->
+
+              <div style="
+                  position:absolute;
+                  z-index:20;
+                  right:2rem;
+                  width:min(700px,90vw);
+                  margin-top:0.6rem;
+                  padding:1.5rem;
+                  background:var(--ur-light, #fffdf8);
+                  border:1px solid #e5ddd3;
+                  border-radius:10px;
+                  box-shadow:0 10px 35px rgba(45,33,27,0.15);
+              ">
+
+
+                <h4 style="
+                    margin:0 0 0.25rem;
+                    color:var(--ur-brown);
+                ">
+                  Edit Vehicle
+                </h4>
+
+                <p style="
+                    margin:0 0 1.2rem;
+                    color:var(--ur-muted);
+                    font-size:0.82rem;
+                ">
+                  Update the details of {{ v.vehicle_name }}.
+                </p>
+
+
+                <form
+                  method="POST"
+                  action="{{ url_for(
+                    'owner.edit_vehicle',
+                    vehicle_id=v.vehicle_id
+                  ) }}"
+                >
+
+
+                  <!-- NAME + MODEL -->
+                  <div style="
+                      display:grid;
+                      grid-template-columns:1fr 1fr;
+                      gap:1rem;
+                  ">
+
+                    <div>
+
+                      <label>
+                        Vehicle Name
+                      </label>
+
+                      <input
+                        type="text"
+                        name="vehicle_name"
+                        value="{{ v.vehicle_name }}"
+                        required
+                      >
+
+                    </div>
+
+
+                    <div>
+
+                      <label>
+                        Model
+                      </label>
+
+                      <input
+                        type="text"
+                        name="model"
+                        value="{{ v.model }}"
+                        required
+                      >
+
+                    </div>
+
+                  </div>
+
+
+                  <!-- TYPE -->
+                  <div style="margin-top:1rem;">
+
+                    <label>
+                      Vehicle Type
+                    </label>
+
+                    <select
+                      name="vehicle_type"
+                      required
+                    >
+
+                      <option
+                        value="car"
+                        {% if v.vehicle_type == 'car' %}
+                          selected
+                        {% endif %}
+                      >
+                        Car
+                      </option>
+
+                      <option
+                        value="bike"
+                        {% if v.vehicle_type == 'bike' %}
+                          selected
+                        {% endif %}
+                      >
+                        Bike
+                      </option>
+
+                      <option
+                        value="scooter"
+                        {% if v.vehicle_type == 'scooter' %}
+                          selected
+                        {% endif %}
+                      >
+                        Scooter
+                      </option>
+
+                    </select>
+
+                  </div>
+
+
+                  <!-- DESCRIPTION -->
+                  <div style="margin-top:1rem;">
+
+                    <label>
+                      Description
+                    </label>
+
+                    <textarea
+                      name="description"
+                      rows="4"
+                      required
+                    >{{ v.description }}</textarea>
+
+                  </div>
+
+
+                  <!-- PRICE + DEPOSIT -->
+                  <div style="
+                      display:grid;
+                      grid-template-columns:1fr 1fr;
+                      gap:1rem;
+                      margin-top:1rem;
+                  ">
+
+
+                    <div>
+
+                      <label>
+                        Price / Day
+                      </label>
+
+                      <input
+                        type="number"
+                        name="price_per_day"
+                        value="{{ v.price_per_day }}"
+                        min="0"
+                        step="0.01"
+                        required
+                      >
+
+                    </div>
+
+
+                    <div>
+
+                      <label>
+                        Security Deposit
+                      </label>
+
+                      <input
+                        type="number"
+                        name="security_deposit"
+                        value="{{ v.security_deposit or 0 }}"
+                        min="0"
+                        step="0.01"
+                      >
+
+                    </div>
+
+                  </div>
+
+
+                  <!-- DISTRICT + PICKUP -->
+                  <div style="
+                      display:grid;
+                      grid-template-columns:1fr 1fr;
+                      gap:1rem;
+                      margin-top:1rem;
+                  ">
+
+
+                    <div>
+
+                      <label>
+                        District
+                      </label>
+
+                      <select
+                        name="district"
+                        required
+                      >
+
+                        <option
+                          value="Ernakulam"
+                          {% if v.district == 'Ernakulam' %}
+                            selected
+                          {% endif %}
+                        >
+                          Ernakulam
+                        </option>
+
+                        <option
+                          value="Thrissur"
+                          {% if v.district == 'Thrissur' %}
+                            selected
+                          {% endif %}
+                        >
+                          Thrissur
+                        </option>
+
+                      </select>
+
+                    </div>
+
+
+                    <div>
+
+                      <label>
+                        Pickup Location
+                      </label>
+
+                      <input
+                        type="text"
+                        name="pickup_location"
+                        value="{{ v.pickup_location }}"
+                        required
+                      >
+
+                    </div>
+
+                  </div>
+
+
+                  <!-- DELIVERY -->
+                  <div style="
+                      margin-top:1rem;
+                      padding:0.8rem;
+                      border:1px solid #e5ddd3;
+                      border-radius:6px;
+                  ">
+
+                    <label>
+
+                      <input
+                        type="checkbox"
+                        name="delivery_available"
+                        value="1"
+                        {% if v.delivery_available %}
+                          checked
+                        {% endif %}
+                      >
+
+                      Pickup or delivery is available
+
+                    </label>
+
+                  </div>
+
+
+                  <!-- LOCATION COORDINATES -->
+                  <div style="
+                      display:grid;
+                      grid-template-columns:1fr 1fr;
+                      gap:1rem;
+                      margin-top:1rem;
+                  ">
+
+
+                    <div>
+
+                      <label>
+                        Latitude
+                      </label>
+
+                      <input
+                        type="number"
+                        name="latitude"
+                        value="{{ v.latitude }}"
+                        step="any"
+                      >
+
+                    </div>
+
+
+                    <div>
+
+                      <label>
+                        Longitude
+                      </label>
+
+                      <input
+                        type="number"
+                        name="longitude"
+                        value="{{ v.longitude }}"
+                        step="any"
+                      >
+
+                    </div>
+
+                  </div>
+
+
+                  <!-- SPECIFICATIONS -->
+                  {% set specs = v.specs_dict %}
+
+                  <div style="margin-top:1rem;">
+
+                    <h5 style="
+                        margin:0 0 0.8rem;
+                        color:var(--ur-brown);
+                    ">
+                      Vehicle Specifications
+                    </h5>
+
+
+                    <div style="
+                        display:grid;
+                        grid-template-columns:
+                          repeat(2,1fr);
+                        gap:0.8rem;
+                    ">
+
+
+                      <div>
+
+                        <label>
+                          Transmission
+                        </label>
+
+                        <select
+                          name="spec_transmission"
+                        >
+
+                          <option
+                            value="Manual"
+                            {% if specs.get('transmission') == 'Manual' %}
+                              selected
+                            {% endif %}
+                          >
+                            Manual
+                          </option>
+
+                          <option
+                            value="Automatic"
+                            {% if specs.get('transmission') == 'Automatic' %}
+                              selected
+                            {% endif %}
+                          >
+                            Automatic
+                          </option>
+
+                        </select>
+
+                      </div>
+
+
+                      <div>
+
+                        <label>
+                          Fuel
+                        </label>
+
+                        <select
+                          name="spec_fuel"
+                        >
+
+                          <option
+                            value="Petrol"
+                            {% if specs.get('fuel') == 'Petrol' %}
+                              selected
+                            {% endif %}
+                          >
+                            Petrol
+                          </option>
+
+                          <option
+                            value="Diesel"
+                            {% if specs.get('fuel') == 'Diesel' %}
+                              selected
+                            {% endif %}
+                          >
+                            Diesel
+                          </option>
+
+                          <option
+                            value="Electric"
+                            {% if specs.get('fuel') == 'Electric' %}
+                              selected
+                            {% endif %}
+                          >
+                            Electric
+                          </option>
+
+                        </select>
+
+                      </div>
+
+
+                      <div>
+
+                        <label>
+                          Seats
+                        </label>
+
+                        <input
+                          type="text"
+                          name="spec_seats"
+                          value="{{ specs.get('seats', '5') }}"
+                        >
+
+                      </div>
+
+
+                      <div>
+
+                        <label>
+                          Mileage
+                        </label>
+
+                        <input
+                          type="text"
+                          name="spec_mileage"
+                          value="{{ specs.get('mileage', '') }}"
+                        >
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+
+                  <!-- IMAGE -->
+                  <div style="margin-top:1rem;">
+
+                    <label>
+                      Image URL
+                    </label>
+
+                    <input
+                      type="text"
+                      name="image_url"
+                      value="{{ v.featured_image or '' }}"
+                    >
+
+                  </div>
+
+
+                  <!-- SAVE -->
+                  <div style="
+                      display:flex;
+                      justify-content:flex-end;
+                      margin-top:1.3rem;
+                  ">
+
+                    <button
+                      type="submit"
+                      class="btn btn-primary btn-sm"
+                    >
+                      Save Changes
+                    </button>
+
+                  </div>
+
+
+                </form>
+
+              </div>
+
+            </details>
+
+
+            <!-- REMOVE -->
+            {% if v.availability_status != 'inactive' %}
+
+            <form
+              method="POST"
+              action="{{ url_for(
+                'owner.remove_vehicle',
+                vehicle_id=v.vehicle_id
+              ) }}"
+              style="display:inline;"
+              onsubmit="
+                return confirm(
+                  'Are you sure you want to remove this vehicle from the public listings?'
+                );
+              "
+            >
+
+              <button
+                type="submit"
+                class="btn btn-sm"
+                style="
+                  border:1px solid #c65b2d;
+                  color:#c65b2d;
+                  background:transparent;
+                  cursor:pointer;
+                "
+              >
+                Remove
+              </button>
+
+            </form>
+
             {% else %}
-              <span class="badge badge-rejected" title="{{ v.rejection_reason or 'Rejected by Admin' }}">Rejected</span>
+
+            <span class="badge badge-rejected">
+              Removed
+            </span>
+
             {% endif %}
-          </td>
-          <td>
-            <a href="{{ url_for('main.vehicle_details', vehicle_id=v.vehicle_id) }}" class="btn btn-outline btn-sm" target="_blank">View</a>
-          </td>
-        </tr>
+
+
+          </div>
+
+        </td>
+
+      </tr>
+
+
       {% else %}
-        <tr>
-          <td colspan="7" style="text-align: center; padding: 3rem 1rem; color: var(--ur-muted);">
-            No vehicles listed yet. <a href="{{ url_for('owner.add_vehicle') }}">Add your first vehicle</a>.
-          </td>
-        </tr>
+
+      <tr>
+
+        <td
+          colspan="7"
+          style="
+            text-align:center;
+            padding:3rem 1rem;
+            color:var(--ur-muted);
+          "
+        >
+
+          No vehicles listed yet.
+
+          <a href="{{ url_for('owner.add_vehicle') }}">
+            Add your first vehicle
+          </a>.
+
+        </td>
+
+      </tr>
+
       {% endfor %}
+
     </tbody>
+
   </table>
+
 </div>
 
 {% endblock %}

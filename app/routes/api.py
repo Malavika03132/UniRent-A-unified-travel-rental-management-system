@@ -22,9 +22,13 @@ api_bp = Blueprint('api', __name__)
 
 @api_bp.route('/properties', methods=['GET'])
 def get_properties():
+
     district = request.args.get('district')
     p_type = request.args.get('type')
-    max_price = request.args.get('max_price', type=float)
+    max_price = request.args.get(
+        'max_price',
+        type=float
+    )
 
     query = Property.query.filter_by(
         approval_status='approved'
@@ -61,6 +65,7 @@ def get_properties():
 
 @api_bp.route('/properties/<int:property_id>', methods=['GET'])
 def get_property(property_id):
+
     p = db.session.get(
         Property,
         property_id
@@ -84,6 +89,7 @@ def get_property(property_id):
 
 @api_bp.route('/vehicles', methods=['GET'])
 def get_vehicles():
+
     district = request.args.get('district')
     v_type = request.args.get('type')
 
@@ -115,6 +121,7 @@ def get_vehicles():
 
 @api_bp.route('/vehicles/<int:vehicle_id>', methods=['GET'])
 def get_vehicle(vehicle_id):
+
     v = db.session.get(
         Vehicle,
         vehicle_id
@@ -164,24 +171,63 @@ def create_booking():
                 0
             )
         )
+
     except (TypeError, ValueError):
+
         return jsonify({
             'success': False,
             'error': 'Invalid property or vehicle selected'
         }), 400
 
-    start_str = data.get('start_date')
-    end_str = data.get('end_date')
+    # ------------------------------------------------------------------------
+    # BASIC BOOKING DATA
+    # ------------------------------------------------------------------------
+
+    start_str = data.get(
+        'start_date'
+    )
+
+    end_str = data.get(
+        'end_date'
+    )
+
     special_requests = data.get(
         'special_requests',
         ''
     )
 
     # ------------------------------------------------------------------------
+    # BOOKING-TIME VERIFICATION DATA
+    #
+    # Property:
+    #   identity_type
+    #   identity_number
+    #
+    # Vehicle:
+    #   driver_license_number
+    # ------------------------------------------------------------------------
+
+    identity_type = data.get(
+        'identity_type',
+        ''
+    ).strip()
+
+    identity_number = data.get(
+        'identity_number',
+        ''
+    ).strip()
+
+    driver_license_number = data.get(
+        'driver_license_number',
+        ''
+    ).strip()
+
+    # ------------------------------------------------------------------------
     # VALIDATE DATES
     # ------------------------------------------------------------------------
 
     try:
+
         start_date = datetime.strptime(
             start_str,
             '%Y-%m-%d'
@@ -193,6 +239,7 @@ def create_booking():
         ).date()
 
         if end_date <= start_date:
+
             return jsonify({
                 'success': False,
                 'error':
@@ -205,6 +252,7 @@ def create_booking():
         ).days
 
     except (TypeError, ValueError):
+
         return jsonify({
             'success': False,
             'error': 'Invalid dates provided'
@@ -223,9 +271,9 @@ def create_booking():
     # Security deposit applies only to vehicles
     security_deposit = 0.0
 
-    # ------------------------------------------------------------------------
+    # =========================================================================
     # PROPERTY
-    # ------------------------------------------------------------------------
+    # =========================================================================
 
     if listing_type == 'property':
 
@@ -235,22 +283,57 @@ def create_booking():
         )
 
         if not prop:
+
             return jsonify({
                 'success': False,
                 'error': 'Property not found'
             }), 404
 
         owner_id = prop.owner_id
+
         rate = float(
             prop.price_per_night
         )
+
         property_id = prop.property_id
 
         security_deposit = 0.0
 
-    # ------------------------------------------------------------------------
+        # --------------------------------------------------------------------
+        # PROPERTY BOOKING VERIFICATION
+        # --------------------------------------------------------------------
+
+        if not identity_type:
+
+            return jsonify({
+                'success': False,
+                'error':
+                    'Please select an identity type.'
+            }), 400
+
+        if identity_type not in [
+            'PAN Card',
+            'Passport',
+            'Voter ID'
+        ]:
+
+            return jsonify({
+                'success': False,
+                'error':
+                    'Invalid identity type selected.'
+            }), 400
+
+        if not identity_number:
+
+            return jsonify({
+                'success': False,
+                'error':
+                    'Identity number is required for property booking.'
+            }), 400
+
+    # =========================================================================
     # VEHICLE
-    # ------------------------------------------------------------------------
+    # =========================================================================
 
     elif listing_type == 'vehicle':
 
@@ -260,20 +343,39 @@ def create_booking():
         )
 
         if not veh:
+
             return jsonify({
                 'success': False,
                 'error': 'Vehicle not found'
             }), 404
 
         owner_id = veh.owner_id
+
         rate = float(
             veh.price_per_day
         )
+
         vehicle_id = veh.vehicle_id
 
         security_deposit = float(
             veh.security_deposit or 2000.0
         )
+
+        # --------------------------------------------------------------------
+        # VEHICLE BOOKING VERIFICATION
+        # --------------------------------------------------------------------
+
+        if not driver_license_number:
+
+            return jsonify({
+                'success': False,
+                'error':
+                    "Driver's license number is required for vehicle booking."
+            }), 400
+
+    # =========================================================================
+    # INVALID LISTING TYPE
+    # =========================================================================
 
     else:
 
@@ -371,8 +473,11 @@ def create_booking():
     if overlapping_booking:
 
         if listing_type == 'property':
+
             item_name = prop.property_name
+
         else:
+
             item_name = veh.vehicle_name
 
         return jsonify({
@@ -422,23 +527,29 @@ def create_booking():
     # =========================================================================
 
     booking = Booking(
+
         booking_reference=ref,
 
         user_id=user_id,
+
         owner_id=owner_id,
 
         listing_type=listing_type,
 
         property_id=property_id,
+
         vehicle_id=vehicle_id,
 
         start_date=start_date,
+
         end_date=end_date,
 
         total_days=days,
+
         daily_rate=rate,
 
         service_fee=service_fee,
+
         tax_amount=tax,
 
         security_deposit=security_deposit,
@@ -447,10 +558,35 @@ def create_booking():
 
         booking_status='pending',
 
-        special_requests=special_requests
+        special_requests=special_requests,
+
+        # ---------------------------------------------------------------
+        # BOOKING-TIME VERIFICATION DETAILS
+        # ---------------------------------------------------------------
+
+        identity_type=(
+            identity_type
+            if listing_type == 'property'
+            else None
+        ),
+
+        identity_number=(
+            identity_number
+            if listing_type == 'property'
+            else None
+        ),
+
+        driver_license_number=(
+            driver_license_number
+            if listing_type == 'vehicle'
+            else None
+        )
     )
 
-    db.session.add(booking)
+    db.session.add(
+        booking
+    )
+
     db.session.commit()
 
     # =========================================================================
@@ -458,6 +594,7 @@ def create_booking():
     # =========================================================================
 
     return jsonify({
+
         'success': True,
 
         'message': (
@@ -503,16 +640,21 @@ def create_booking():
 @api_bp.route('/reviews', methods=['POST'])
 def add_review():
 
-    user_id = session.get('user_id')
+    user_id = session.get(
+        'user_id'
+    )
 
     if not user_id:
+
         return jsonify({
             'success': False,
             'error': 'Login required'
         }), 401
 
     data = (
-        request.get_json(silent=True)
+        request.get_json(
+            silent=True
+        )
         or {}
     )
 
@@ -543,6 +685,7 @@ def add_review():
     )
 
     if not booking or booking.user_id != user_id:
+
         return jsonify({
             'success': False,
             'error': 'Invalid booking'
@@ -557,12 +700,14 @@ def add_review():
     )
 
     if existing:
+
         return jsonify({
             'success': False,
             'error': 'Review already submitted'
         }), 400
 
     rev = Review(
+
         booking_id=booking_id,
 
         user_id=user_id,
@@ -580,7 +725,10 @@ def add_review():
         review_text=text
     )
 
-    db.session.add(rev)
+    db.session.add(
+        rev
+    )
+
     db.session.commit()
 
     return jsonify({
