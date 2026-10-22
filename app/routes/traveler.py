@@ -2,6 +2,7 @@ from datetime import date
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from app.models import db, User, Booking, Property, Vehicle, Review, Complaint, Payment
 from app.routes.auth import login_required
+from app.utils.validators import validate_full_name, validate_phone
 
 traveler_bp = Blueprint('traveler', __name__)
 
@@ -183,8 +184,21 @@ def profile():
     user = db.session.get(User, user_id)
     
     if request.method == 'POST':
-        user.full_name = request.form.get('full_name', user.full_name).strip()
-        user.phone = request.form.get('phone', user.phone).strip()
+        full_name = request.form.get('full_name', user.full_name).strip()
+        phone = request.form.get('phone', user.phone).strip()
+        
+        valid, err = validate_full_name(full_name)
+        if not valid:
+            flash(err, 'danger')
+            return redirect(url_for('traveler.profile'))
+            
+        valid, err, normalized_phone = validate_phone(phone)
+        if not valid:
+            flash(err, 'danger')
+            return redirect(url_for('traveler.profile'))
+            
+        user.full_name = full_name
+        user.phone = normalized_phone
         db.session.commit()
         session['user_name'] = user.full_name
         flash('Your profile details have been updated.', 'success')

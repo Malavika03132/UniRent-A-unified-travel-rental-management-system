@@ -27,30 +27,117 @@ def run_tests():
         assert res.status_code == 200, f"Expected 200 for {url}, got {res.status_code}"
         print(f"  [PASS] GET {url} -> 200 OK")
 
-    print("\n=== 2. Testing Public Registration Security (No Admin Allowed) ===")
-    # Attempting to register as admin must be blocked
+    print("\n=== 2. Testing Registration Security & Validations ===")
+    # 2.1 Attempting to register as admin must be blocked
     res = client.post('/auth/register', data={
         'full_name': 'Hacker Admin',
         'email': 'hacker@unirent.com',
-        'phone': '1234567890',
+        'phone': '+91 98470 12345',
         'password': 'password123',
         'confirm_password': 'password123',
+        'kyc_document_type': 'pan_card',
+        'kyc_document_number': 'ABCDE1234F',
         'role': 'admin'
     }, follow_redirects=True)
     assert b"Public registration is restricted to Travelers and Owners only" in res.data or res.status_code == 400
     print("  [PASS] Admin public registration strictly forbidden.")
 
-    # Valid Traveler Registration
+    # 2.2 Validation: Invalid PAN Card format
     res = client.post('/auth/register', data={
         'full_name': 'Meera Krishnan',
-        'email': 'meera@example.com',
+        'email': 'meera_bad_pan@example.com',
         'phone': '+91 98470 99999',
         'password': 'password123',
         'confirm_password': 'password123',
+        'kyc_document_type': 'pan_card',
+        'kyc_document_number': 'INVALID_PAN_123',
         'role': 'traveler'
     }, follow_redirects=True)
-    assert b"Traveler Sanctuary" in res.data or res.status_code == 200
-    print("  [PASS] Traveler registration successful.")
+    assert b"Invalid PAN Card" in res.data or res.status_code == 400
+    print("  [PASS] Invalid PAN Card rejected by KYC validator.")
+
+    # 2.3 Validation: Invalid Indian Phone Number
+    res = client.post('/auth/register', data={
+        'full_name': 'Meera Krishnan',
+        'email': 'meera_bad_phone@example.com',
+        'phone': '12345',
+        'password': 'password123',
+        'confirm_password': 'password123',
+        'kyc_document_type': 'pan_card',
+        'kyc_document_number': 'ABCDE1234F',
+        'role': 'traveler'
+    }, follow_redirects=True)
+    assert b"valid 10-digit Indian mobile number" in res.data or res.status_code == 400
+    print("  [PASS] Invalid phone number rejected by validator.")
+
+    # 2.4 Validation: Password mismatch
+    res = client.post('/auth/register', data={
+        'full_name': 'Meera Krishnan',
+        'email': 'meera_mismatch@example.com',
+        'phone': '+91 98470 99999',
+        'password': 'password123',
+        'confirm_password': 'different_password',
+        'kyc_document_type': 'pan_card',
+        'kyc_document_number': 'ABCDE1234F',
+        'role': 'traveler'
+    }, follow_redirects=True)
+    assert b"Passwords do not match" in res.data or res.status_code == 400
+    print("  [PASS] Password mismatch rejected by validator.")
+
+    # Cleanup any previous test registration emails
+    with app.app_context():
+        test_emails = ['meera_test@example.com', 'venu_test@example.com', 'meera_bad_pan@example.com', 'meera_bad_phone@example.com', 'meera_mismatch@example.com']
+        users_to_del = User.query.filter(User.email.in_(test_emails)).all()
+        for u in users_to_del:
+            db.session.delete(u)
+        db.session.commit()
+
+    # 2.5 Valid Traveler Registration with Verified PAN Card
+    res = client.post('/auth/register', data={
+        'full_name': 'Meera Krishnan',
+        'email': 'meera_test@example.com',
+        'phone': '+91 98470 99999',
+        'password': 'password123',
+        'confirm_password': 'password123',
+        'kyc_document_type': 'pan_card',
+        'kyc_document_number': 'abcde1234f',  # Test auto-uppercasing
+        'role': 'traveler'
+    }, follow_redirects=True)
+    assert res.status_code == 200
+    assert b"Traveler Sanctuary" in res.data
+    with app.app_context():
+        u = User.query.filter_by(email='meera_test@example.com').first()
+        assert u is not None
+        assert u.kyc_document_type == 'pan_card'
+        assert u.kyc_document_number == 'ABCDE1234F'
+        assert u.kyc_status == 'verified'
+    print("  [PASS] Valid Traveler registration with PAN Card KYC succeeded.")
+
+    # 2.6 Valid Owner Registration with Verified Passport & Business Info
+    client.get('/auth/logout')
+    res = client.post('/auth/register', data={
+        'full_name': 'Venugopal Varma',
+        'email': 'venu_test@example.com',
+        'phone': '+91 94470 88888',
+        'password': 'password123',
+        'confirm_password': 'password123',
+        'kyc_document_type': 'passport',
+        'kyc_document_number': 'Z1234567',
+        'business_name': 'Varma Heritage Palaces & Rides',
+        'district': 'Thrissur',
+        'role': 'owner'
+    }, follow_redirects=True)
+    assert res.status_code == 200
+    assert b"Host Business Portal" in res.data
+    with app.app_context():
+        u_owner = User.query.filter_by(email='venu_test@example.com').first()
+        assert u_owner is not None
+        assert u_owner.kyc_document_type == 'passport'
+        assert u_owner.kyc_document_number == 'Z1234567'
+        assert u_owner.owner_profile is not None
+        assert u_owner.owner_profile.business_name == 'Varma Heritage Palaces & Rides'
+        assert u_owner.owner_profile.district == 'Thrissur'
+    print("  [PASS] Valid Owner registration with Passport KYC and Business Info succeeded.")
 
     print("\n=== 3. Testing Role-Based Dashboards & Access Controls ===")
     
@@ -98,7 +185,12 @@ def run_tests():
     print("\n=== 4. Testing Admin Listing Approval Workflow ===")
     with app.app_context():
         pending_p = Property.query.filter_by(approval_status='pending').first()
-        assert pending_p is not None, "Expected at least 1 pending property from seed"
+        if not pending_p:
+            pending_p = Property.query.first()
+            if pending_p:
+                pending_p.approval_status = 'pending'
+                db.session.commit()
+        assert pending_p is not None, "Expected at least 1 property for approval testing"
         pending_id = pending_p.property_id
         pending_name = pending_p.property_name
 

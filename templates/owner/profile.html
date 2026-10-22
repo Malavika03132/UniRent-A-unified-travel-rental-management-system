@@ -17,8 +17,34 @@
         <div style="font-size: 0.88rem; color: var(--ur-muted);">
           Verified Kerala Host • Operating in {{ owner.district }}
         </div>
-        <span class="badge badge-approved" style="margin-top: 0.5rem;">KYC Status: {{ owner.kyc_status|capitalize }}</span>
+        <span class="badge badge-approved" style="margin-top: 0.5rem;">
+          🛡️ Host KYC Status: {{ owner.kyc_status|capitalize }}
+        </span>
       </div>
+    </div>
+
+    <!-- Verified Host KYC Card -->
+    <div style="background: var(--ur-ivory); border: 1px solid var(--ur-border); border-radius: var(--radius-sm); padding: 1.25rem 1.5rem; margin-bottom: 1.75rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+        <span style="font-size: 0.82rem; font-weight: 700; color: var(--ur-burnt-orange); text-transform: uppercase; letter-spacing: 0.05em;">
+          🛡️ Government Identity KYC Verification
+        </span>
+        <span class="badge badge-approved" style="font-size: 0.75rem;">Verified Host Partner</span>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.9rem;">
+        <div>
+          <span style="color: var(--ur-muted); font-size: 0.8rem; display: block;">KYC Document Type</span>
+          <strong>{{ user.kyc_document_label }}</strong>
+        </div>
+        <div>
+          <span style="color: var(--ur-muted); font-size: 0.8rem; display: block;">Document Number (Masked)</span>
+          <strong style="font-family: monospace; letter-spacing: 0.05em;">{{ user.get_masked_kyc_number() }}</strong>
+        </div>
+      </div>
+      <small style="color: var(--ur-muted); display: block; margin-top: 0.8rem; font-size: 0.78rem;">
+        🔒 Replaces commercial license requirements with personal verified government KYC as approved for Kerala heritage hosts.
+      </small>
     </div>
 
     <form action="{{ url_for('owner.profile') }}" method="POST">

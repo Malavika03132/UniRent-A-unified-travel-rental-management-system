@@ -8,7 +8,7 @@
 <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.5rem 2rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
   <div>
     <h3 style="font-size: 1.25rem; margin: 0 0 0.3rem;">Host Partners ({{ owners|length }})</h3>
-    <p style="color: var(--ur-muted); font-size: 0.88rem; margin: 0;">Manage property curators and mobility hosts operating in Ernakulam and Thrissur.</p>
+    <p style="color: var(--ur-muted); font-size: 0.88rem; margin: 0;">Manage property curators and mobility hosts operating in Ernakulam and Thrissur with verified KYC credentials.</p>
   </div>
 </div>
 
@@ -19,7 +19,7 @@
         <th>Host Partner</th>
         <th>Business Brand</th>
         <th>District Hub</th>
-        <th>KYC Status</th>
+        <th>KYC Identity</th>
         <th>Properties</th>
         <th>Vehicles</th>
         <th>Joined</th>
@@ -42,7 +42,17 @@
           <td>{{ o.business_name or 'Independent Host' }}</td>
           <td><strong>{{ o.district }}</strong></td>
           <td>
-            <span class="badge badge-approved">{{ o.kyc_status|capitalize }}</span>
+            <span class="badge {% if o.kyc_status == 'verified' %}badge-approved{% elif o.kyc_status == 'rejected' %}badge-rejected{% else %}badge-pending{% endif %}">
+              {{ (o.kyc_status or 'verified')|capitalize }}
+            </span>
+            {% if o.user.kyc_document_type %}
+              <div style="font-size: 0.76rem; color: var(--ur-muted); margin-top: 0.25rem;">
+                {{ o.user.kyc_document_label }}
+              </div>
+              <div style="font-size: 0.74rem; font-family: monospace; color: var(--ur-burnt-orange); font-weight: 600;">
+                {{ o.user.get_masked_kyc_number() }}
+              </div>
+            {% endif %}
           </td>
           <td>{{ o.properties.count() }} Stay(s)</td>
           <td>{{ o.vehicles.count() }} Vehicle(s)</td>

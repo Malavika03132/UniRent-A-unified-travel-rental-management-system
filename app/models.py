@@ -17,6 +17,9 @@ class User(db.Model):
     role = db.Column(db.String(20), nullable=False, default='traveler')
     status = db.Column(db.String(20), nullable=False, default='active')
     profile_image = db.Column(db.String(255), nullable=True)
+    kyc_document_type = db.Column(db.String(50), nullable=True)
+    kyc_document_number = db.Column(db.String(100), nullable=True)
+    kyc_status = db.Column(db.String(20), nullable=False, default='verified')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(
         db.DateTime,
@@ -66,6 +69,30 @@ class User(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+    @property
+    def kyc_document_label(self):
+        labels = {
+            'pan_card': 'PAN Card (Permanent Account Number)',
+            'passport': 'Indian / International Passport',
+            'voter_id': "Voter ID / Election Card (EPIC)",
+            'driving_license': 'Driving Licence'
+        }
+        return labels.get(
+            self.kyc_document_type,
+            self.kyc_document_type.replace('_', ' ').title() if self.kyc_document_type else 'Not Provided'
+        )
+
+    def get_masked_kyc_number(self):
+        if not self.kyc_document_number:
+            return 'Not Provided'
+        num = self.kyc_document_number.strip()
+        if len(num) <= 4:
+            return num
+        prefix = num[:2]
+        suffix = num[-2:]
+        masked_len = max(4, len(num) - 4)
+        return f"{prefix}{'*' * masked_len}{suffix}"
+
     def to_dict(self):
         return {
             'user_id': self.user_id,
@@ -74,6 +101,10 @@ class User(db.Model):
             'phone': self.phone,
             'role': self.role,
             'status': self.status,
+            'kyc_document_type': self.kyc_document_type,
+            'kyc_document_number': self.kyc_document_number,
+            'kyc_document_label': self.kyc_document_label,
+            'kyc_status': self.kyc_status,
             'profile_image': self.profile_image,
             'created_at': (
                 self.created_at.strftime('%Y-%m-%d %H:%M:%S')

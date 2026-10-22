@@ -17,8 +17,34 @@
         <div style="font-size: 0.88rem; color: var(--ur-muted);">
           Verified Traveler • Member since {{ user.created_at.strftime('%B %Y') if user.created_at else '2026' }}
         </div>
-        <span class="badge badge-approved" style="margin-top: 0.5rem;">KYC Verified Traveler</span>
+        <span class="badge badge-approved" style="margin-top: 0.5rem;">
+          🛡️ KYC Status: {{ (user.kyc_status or 'verified')|capitalize }}
+        </span>
       </div>
+    </div>
+
+    <!-- Verified KYC Card -->
+    <div style="background: var(--ur-ivory); border: 1px solid var(--ur-border); border-radius: var(--radius-sm); padding: 1.25rem 1.5rem; margin-bottom: 1.75rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+        <span style="font-size: 0.82rem; font-weight: 700; color: var(--ur-burnt-orange); text-transform: uppercase; letter-spacing: 0.05em;">
+          🛡️ Government Identity KYC Record
+        </span>
+        <span class="badge badge-approved" style="font-size: 0.75rem;">Government Verified</span>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.9rem;">
+        <div>
+          <span style="color: var(--ur-muted); font-size: 0.8rem; display: block;">Document Type</span>
+          <strong>{{ user.kyc_document_label }}</strong>
+        </div>
+        <div>
+          <span style="color: var(--ur-muted); font-size: 0.8rem; display: block;">Document Number (Masked)</span>
+          <strong style="font-family: monospace; letter-spacing: 0.05em;">{{ user.get_masked_kyc_number() }}</strong>
+        </div>
+      </div>
+      <small style="color: var(--ur-muted); display: block; margin-top: 0.8rem; font-size: 0.78rem;">
+        🔒 Encrypted & stored under Kerala Tourism & Mobility Standards. KYC numbers cannot be altered after verification.
+      </small>
     </div>
 
     <form action="{{ url_for('traveler.profile') }}" method="POST">

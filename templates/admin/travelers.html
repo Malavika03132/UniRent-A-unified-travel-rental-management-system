@@ -8,7 +8,7 @@
 <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.5rem 2rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
   <div>
     <h3 style="font-size: 1.25rem; margin: 0 0 0.3rem;">Registered Travelers ({{ travelers|length }})</h3>
-    <p style="color: var(--ur-muted); font-size: 0.88rem; margin: 0;">Monitor traveler profiles, booking activity, and account status.</p>
+    <p style="color: var(--ur-muted); font-size: 0.88rem; margin: 0;">Monitor traveler profiles, booking activity, and verified government KYC records.</p>
   </div>
 </div>
 
@@ -19,6 +19,7 @@
         <th>Traveler Name</th>
         <th>Email Address</th>
         <th>Contact Phone</th>
+        <th>KYC Verification</th>
         <th>Bookings Count</th>
         <th>Status</th>
         <th>Joined Date</th>
@@ -40,6 +41,19 @@
           </td>
           <td>{{ t.email }}</td>
           <td>{{ t.phone }}</td>
+          <td>
+            <span class="badge {% if t.kyc_status == 'verified' %}badge-approved{% elif t.kyc_status == 'rejected' %}badge-rejected{% else %}badge-pending{% endif %}">
+              {{ (t.kyc_status or 'verified')|capitalize }}
+            </span>
+            {% if t.kyc_document_type %}
+              <div style="font-size: 0.76rem; color: var(--ur-muted); margin-top: 0.25rem;">
+                {{ t.kyc_document_label }}
+              </div>
+              <div style="font-size: 0.74rem; font-family: monospace; color: var(--ur-burnt-orange); font-weight: 600;">
+                {{ t.get_masked_kyc_number() }}
+              </div>
+            {% endif %}
+          </td>
           <td>
             <span class="badge badge-pickup">{{ t.bookings.count() }} Booking(s)</span>
           </td>

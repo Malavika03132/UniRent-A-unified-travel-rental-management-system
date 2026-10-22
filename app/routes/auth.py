@@ -12,6 +12,15 @@ from flask import (
 )
 
 from app.models import db, User, Owner, Admin
+from app.utils.validators import (
+    validate_full_name,
+    validate_email,
+    validate_phone,
+    validate_password,
+    validate_kyc,
+    validate_owner_fields,
+    KYC_PATTERNS
+)
 
 
 auth_bp = Blueprint('auth', __name__)
@@ -388,280 +397,136 @@ def login(role_type=None):
 def register():
 
     if session.get('user_id'):
-
         return redirect(
             url_for('main.index')
         )
 
     if request.method == 'POST':
-
         is_api = request.is_json
-
         data = (
             request.get_json()
             if is_api
             else request.form
         )
 
-        # ----------------------------------------------------
-        # Basic registration fields only
-        # ----------------------------------------------------
+        full_name = data.get('full_name', '').strip()
+        email = data.get('email', '').strip().lower()
+        phone = data.get('phone', '').strip()
+        password = data.get('password', '')
+        confirm_password = data.get('confirm_password', '')
+        role = data.get('role', 'traveler').strip().lower()
+        kyc_document_type = data.get('kyc_document_type', '').strip().lower()
+        kyc_document_number = data.get('kyc_document_number', '').strip()
+        business_name = data.get('business_name', '').strip()
+        district = data.get('district', 'Ernakulam').strip()
 
-        full_name = data.get(
-            'full_name',
-            ''
-        ).strip()
+        def fail_validation(message, status_code=400):
+            if is_api:
+                return jsonify({
+                    'success': False,
+                    'message': message
+                }), status_code
+            flash(message, 'danger')
+            return render_template(
+                'register.html',
+                data=data,
+                kyc_patterns=KYC_PATTERNS
+            )
 
-        email = data.get(
-            'email',
-            ''
-        ).strip().lower()
-
-        phone = data.get(
-            'phone',
-            ''
-        ).strip()
-
-        password = data.get(
-            'password',
-            ''
-        )
-
-        confirm_password = data.get(
-            'confirm_password',
-            ''
-        )
-
-        role = data.get(
-            'role',
-            'traveler'
-        ).strip().lower()
-
-        # ----------------------------------------------------
-        # Public registration only allows Traveler and Owner
-        # ----------------------------------------------------
-
-        if role not in [
-            'traveler',
-            'owner'
-        ]:
-
-            error_msg = (
-                'Public registration is restricted to '
-                'Travelers and Owners only. '
+        # 1. Role validation
+        if role not in ['traveler', 'owner']:
+            return fail_validation(
+                'Public registration is restricted to Travelers and Owners only. '
                 'Admin registration is disabled.'
             )
 
-            if is_api:
+        # 2. Required core fields
+        if not full_name or not email or not phone or not password:
+            return fail_validation('Please fill in all required personal details.')
 
-                return jsonify({
-                    'success': False,
-                    'message': error_msg
-                }), 400
+        # 3. Full legal name validation
+        valid, err = validate_full_name(full_name)
+        if not valid:
+            return fail_validation(err)
 
-            flash(
-                error_msg,
-                'danger'
-            )
+        # 4. Email validation
+        valid, err = validate_email(email)
+        if not valid:
+            return fail_validation(err)
 
-            return render_template(
-                'register.html',
-                data=data
-            )
+        # 5. Phone validation (Indian mobile)
+        valid, err, normalized_phone = validate_phone(phone)
+        if not valid:
+            return fail_validation(err)
 
-        # ----------------------------------------------------
-        # Required fields
-        # ----------------------------------------------------
+        # 6. Password strength & confirmation
+        valid, err = validate_password(password, confirm_password)
+        if not valid:
+            return fail_validation(err)
 
-        if (
-            not full_name
-            or not email
-            or not phone
-            or not password
-        ):
+        # 7. KYC Verification Validation (Required for both Traveler and Owner)
+        valid, err, cleaned_kyc_number = validate_kyc(kyc_document_type, kyc_document_number)
+        if not valid:
+            return fail_validation(err)
 
-            error_msg = (
-                'Please fill in all required fields.'
-            )
-
-            if is_api:
-
-                return jsonify({
-                    'success': False,
-                    'message': error_msg
-                }), 400
-
-            flash(
-                error_msg,
-                'danger'
-            )
-
-            return render_template(
-                'register.html',
-                data=data
-            )
-
-        # ----------------------------------------------------
-        # Password confirmation
-        # ----------------------------------------------------
-
-        if password != confirm_password:
-
-            error_msg = (
-                'Passwords do not match.'
-            )
-
-            if is_api:
-
-                return jsonify({
-                    'success': False,
-                    'message': error_msg
-                }), 400
-
-            flash(
-                error_msg,
-                'danger'
-            )
-
-            return render_template(
-                'register.html',
-                data=data
-            )
-
-        # ----------------------------------------------------
-        # Password length
-        # ----------------------------------------------------
-
-        if len(password) < 6:
-
-            error_msg = (
-                'Password must be at least 6 characters long.'
-            )
-
-            if is_api:
-
-                return jsonify({
-                    'success': False,
-                    'message': error_msg
-                }), 400
-
-            flash(
-                error_msg,
-                'danger'
-            )
-
-            return render_template(
-                'register.html',
-                data=data
-            )
-
-        # ----------------------------------------------------
-        # Check duplicate email
-        # ----------------------------------------------------
-
-        existing_user = User.query.filter_by(
-            email=email
-        ).first()
-
+        # 8. Duplicate email check
+        existing_user = User.query.filter_by(email=email).first()
         if existing_user:
-
-            error_msg = (
-                'An account with this email address '
-                'already exists. Please log in.'
+            return fail_validation(
+                'An account with this email address already exists. Please log in.',
+                status_code=409
             )
 
-            if is_api:
-
-                return jsonify({
-                    'success': False,
-                    'message': error_msg
-                }), 409
-
-            flash(
-                error_msg,
-                'danger'
-            )
-
-            return render_template(
-                'register.html',
-                data=data
-            )
+        # 9. Owner-specific validations
+        cleaned_biz = None
+        cleaned_dist = None
+        if role == 'owner':
+            valid, err, cleaned_biz, cleaned_dist = validate_owner_fields(business_name, district, full_name)
+            if not valid:
+                return fail_validation(err)
 
         # ====================================================
-        # CREATE USER
+        # CREATE USER WITH VERIFIED KYC
         # ====================================================
-
         new_user = User(
             full_name=full_name,
             email=email,
-            phone=phone,
+            phone=normalized_phone,
             role=role,
-            status='active'
+            status='active',
+            kyc_document_type=kyc_document_type,
+            kyc_document_number=cleaned_kyc_number,
+            kyc_status='verified'
         )
-
         new_user.set_password(password)
-
         db.session.add(new_user)
-
-        # Get new user ID
         db.session.flush()
 
         # ====================================================
         # CREATE OWNER PROFILE
         # ====================================================
-
         if role == 'owner':
-
             owner_profile = Owner(
                 user_id=new_user.user_id,
-
-                # Default business name.
-                # Owner can provide actual listing/business
-                # information later when adding a property
-                # or vehicle.
-
-                business_name=(
-                    f"{full_name}'s Heritage Rentals"
-                ),
-
-                # Default operational district.
-                # Specific property/vehicle location will be
-                # entered during listing creation.
-
-                district='Ernakulam',
-
-                # Existing demo status retained so that
-                # current owner functionality is not affected.
-
+                business_name=cleaned_biz,
+                district=cleaned_dist,
                 kyc_status='verified',
-
-                bio=(
-                    f"Heritage host operating in Kerala."
-                )
+                bio=f"Verified heritage host operating in {cleaned_dist}, Kerala."
             )
-
-            db.session.add(
-                owner_profile
-            )
+            db.session.add(owner_profile)
 
         # ====================================================
         # SAVE DATABASE CHANGES
         # ====================================================
-
         db.session.commit()
 
         # ====================================================
         # AUTOMATIC LOGIN
         # ====================================================
-
         session['user_id'] = new_user.user_id
         session['user_role'] = new_user.role
         session['user_name'] = new_user.full_name
         session['user_email'] = new_user.email
-
-        # ====================================================
-        # REDIRECT
-        # ====================================================
 
         redirect_url = (
             url_for('owner.dashboard')
@@ -669,12 +534,7 @@ def register():
             else url_for('traveler.dashboard')
         )
 
-        # ====================================================
-        # API RESPONSE
-        # ====================================================
-
         if is_api:
-
             return jsonify({
                 'success': True,
                 'message': (
@@ -685,22 +545,17 @@ def register():
                 'user': new_user.to_dict()
             }), 201
 
-        # ====================================================
-        # NORMAL RESPONSE
-        # ====================================================
-
         flash(
-            f'Account created successfully! '
+            f'Account created and KYC verified successfully! '
             f'Welcome to UniRent, {full_name}.',
             'success'
         )
 
-        return redirect(
-            redirect_url
-        )
+        return redirect(redirect_url)
 
     return render_template(
-        'register.html'
+        'register.html',
+        kyc_patterns=KYC_PATTERNS
     )
 
 

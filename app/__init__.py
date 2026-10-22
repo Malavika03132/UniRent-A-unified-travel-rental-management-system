@@ -56,7 +56,18 @@ def create_app(config_class=Config):
         # Create tables if not present (especially for SQLite out-of-the-box mode)
         try:
             db.create_all()
+            inspector = db.inspect(db.engine)
+            if 'users' in inspector.get_table_names():
+                existing_cols = [c['name'] for c in inspector.get_columns('users')]
+                with db.engine.connect() as conn:
+                    if 'kyc_document_type' not in existing_cols:
+                        conn.execute(db.text("ALTER TABLE users ADD COLUMN kyc_document_type VARCHAR(50)"))
+                    if 'kyc_document_number' not in existing_cols:
+                        conn.execute(db.text("ALTER TABLE users ADD COLUMN kyc_document_number VARCHAR(100)"))
+                    if 'kyc_status' not in existing_cols:
+                        conn.execute(db.text("ALTER TABLE users ADD COLUMN kyc_status VARCHAR(20) DEFAULT 'verified'"))
+                    conn.commit()
         except Exception as e:
-            print(f"Warning during db.create_all(): {e}")
+            print(f"Warning during db.create_all() / migration: {e}")
             
     return app

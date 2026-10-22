@@ -19,7 +19,10 @@ def seed_database():
             email="admin@unirent.com",
             phone="+91 98470 12345",
             role="admin",
-            status="active"
+            status="active",
+            kyc_document_type="pan_card",
+            kyc_document_number="AAAPV1234K",
+            kyc_status="verified"
         )
         admin_user.set_password("admin123")
         db.session.add(admin_user)
@@ -38,7 +41,10 @@ def seed_database():
             email="owner@unirent.com",
             phone="+91 94471 23456",
             role="owner",
-            status="active"
+            status="active",
+            kyc_document_type="pan_card",
+            kyc_document_number="ABCDE5678F",
+            kyc_status="verified"
         )
         owner1_user.set_password("owner123")
         db.session.add(owner1_user)
@@ -60,7 +66,10 @@ def seed_database():
             email="owner2@unirent.com",
             phone="+91 97455 67890",
             role="owner",
-            status="active"
+            status="active",
+            kyc_document_type="passport",
+            kyc_document_number="Z8765432",
+            kyc_status="verified"
         )
         owner2_user.set_password("owner123")
         db.session.add(owner2_user)
@@ -83,7 +92,10 @@ def seed_database():
             email="traveler@unirent.com",
             phone="+91 99951 34567",
             role="traveler",
-            status="active"
+            status="active",
+            kyc_document_type="pan_card",
+            kyc_document_number="KLMNP9012Q",
+            kyc_status="verified"
         )
         traveler1.set_password("traveler123")
         db.session.add(traveler1)
@@ -93,7 +105,10 @@ def seed_database():
             email="traveler2@unirent.com",
             phone="+91 98952 87654",
             role="traveler",
-            status="active"
+            status="active",
+            kyc_document_type="voter_id",
+            kyc_document_number="KLM7654321",
+            kyc_status="verified"
         )
         traveler2.set_password("traveler123")
         db.session.add(traveler2)
