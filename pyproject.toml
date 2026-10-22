@@ -12,6 +12,7 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "Werkzeug>=3.0.0",
     "Flask-Mail>=0.10.0",
+     "razorpay",
 ]
 
 [tool.vercel]
