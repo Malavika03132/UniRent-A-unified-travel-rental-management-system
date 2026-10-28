@@ -1,0 +1,115 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Edit Vehicle #{{ vehicle.vehicle_id }} — Admin Portal{% endblock %}
+{% block page_title %}Edit Vehicle: {{ vehicle.vehicle_name }}{% endblock %}
+
+{% block dashboard_content %}
+
+<div style="max-width: 880px; margin: 0 auto;">
+  
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+    <a href="{{ url_for('admin.vehicles') }}" class="btn btn-outline btn-sm">← Back to All Vehicles</a>
+    <span class="badge {% if vehicle.approval_status == 'approved' %}badge-approved{% elif vehicle.approval_status == 'pending' %}badge-pending{% else %}badge-rejected{% endif %}">
+      Status: {{ vehicle.approval_status|upper }}
+    </span>
+  </div>
+
+  <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 2.2rem; box-shadow: var(--shadow-sm);">
+    
+    <form action="{{ url_for('admin.edit_vehicle', vehicle_id=vehicle.vehicle_id) }}" method="POST">
+      
+      <h4 style="margin-bottom: 1.2rem; border-bottom: 1px solid var(--ur-border); padding-bottom: 0.5rem; color: var(--ur-brown);">Vehicle Details & Specifications</h4>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem;">
+        <div class="form-group">
+          <label for="v_name">Vehicle Name / Make</label>
+          <input type="text" id="v_name" name="vehicle_name" class="form-control" value="{{ vehicle.vehicle_name }}" required>
+        </div>
+
+        <div class="form-group">
+          <label for="v_model">Trim / Model Edition</label>
+          <input type="text" id="v_model" name="model" class="form-control" value="{{ vehicle.model }}" required>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem;">
+        <div class="form-group">
+          <label for="v_type">Category</label>
+          <select id="v_type" name="vehicle_type" class="form-control" required>
+            <option value="car" {% if vehicle.vehicle_type == 'car' %}selected{% endif %}>Car / SUV</option>
+            <option value="bike" {% if vehicle.vehicle_type == 'bike' %}selected{% endif %}>Motorcycle</option>
+            <option value="scooter" {% if vehicle.vehicle_type == 'scooter' %}selected{% endif %}>Scooter</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="v_district">Operating District</label>
+          <select id="v_district" name="district" class="form-control" required>
+            <option value="Ernakulam" {% if vehicle.district == 'Ernakulam' %}selected{% endif %}>Ernakulam</option>
+            <option value="Thrissur" {% if vehicle.district == 'Thrissur' %}selected{% endif %}>Thrissur</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="v_pickup">Pickup Hub Location</label>
+        <input type="text" id="v_pickup" name="pickup_location" class="form-control" value="{{ vehicle.pickup_location }}" required>
+      </div>
+
+      <div class="form-group">
+        <label for="v_desc">Description</label>
+        <textarea id="v_desc" name="description" rows="4" class="form-control" required>{{ vehicle.description }}</textarea>
+      </div>
+
+      <h4 style="margin: 2rem 0 1.2rem; border-bottom: 1px solid var(--ur-border); padding-bottom: 0.5rem; color: var(--ur-brown);">Pricing & Caution Deposit</h4>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem;">
+        <div class="form-group">
+          <label for="v_price">Price / Day (₹)</label>
+          <input type="number" id="v_price" name="price_per_day" class="form-control" value="{{ vehicle.price_per_day }}" min="200" step="50" required>
+        </div>
+        <div class="form-group">
+          <label for="v_deposit">Refundable Security Deposit (₹)</label>
+          <input type="number" id="v_deposit" name="security_deposit" class="form-control" value="{{ vehicle.security_deposit }}" min="0" step="100" required>
+        </div>
+      </div>
+
+      <h4 style="margin: 2rem 0 1.2rem; border-bottom: 1px solid var(--ur-border); padding-bottom: 0.5rem; color: var(--ur-brown);">Platform Moderation & Availability</h4>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem;">
+        <div class="form-group">
+          <label for="v_approval">Approval Status</label>
+          <select id="v_approval" name="approval_status" class="form-control">
+            <option value="approved" {% if vehicle.approval_status == 'approved' %}selected{% endif %}>Approved (Live on public catalog)</option>
+            <option value="pending" {% if vehicle.approval_status == 'pending' %}selected{% endif %}>Pending Verification</option>
+            <option value="rejected" {% if vehicle.approval_status == 'rejected' %}selected{% endif %}>Rejected</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="v_avail">Availability Status</label>
+          <select id="v_avail" name="availability_status" class="form-control">
+            <option value="available" {% if vehicle.availability_status == 'available' %}selected{% endif %}>Active / Available for rental</option>
+            <option value="inactive" {% if vehicle.availability_status == 'inactive' %}selected{% endif %}>Inactive / Deactivated</option>
+            <option value="maintenance" {% if vehicle.availability_status == 'maintenance' %}selected{% endif %}>Under Maintenance</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="v_image">Featured Image URL / Path</label>
+        <input type="text" id="v_image" name="featured_image" class="form-control" value="{{ vehicle.featured_image }}">
+      </div>
+
+      <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+        <button type="submit" class="btn btn-primary">Save Admin Changes</button>
+        <a href="{{ url_for('admin.vehicles') }}" class="btn btn-secondary">Cancel</a>
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+{% endblock %}

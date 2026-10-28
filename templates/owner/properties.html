@@ -195,6 +195,11 @@
             >
               Rejected
             </span>
+            {% if p.rejection_reason %}
+              <div style="font-size: 0.75rem; color: #c5221f; margin-top: 0.3rem; max-width: 140px;">
+                {{ p.rejection_reason }}
+              </div>
+            {% endif %}
 
           {% endif %}
 
@@ -247,6 +252,14 @@
             >
               View
             </a>
+
+            {% if p.approval_status == 'rejected' %}
+              <form action="{{ url_for('owner.resubmit_property', property_id=p.property_id) }}" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-primary btn-sm" style="background-color: var(--ur-burnt-orange); border-color: var(--ur-burnt-orange);" title="Resubmit for Admin approval">
+                  Resubmit
+                </button>
+              </form>
+            {% endif %}
 
 
             <!-- EDIT -->

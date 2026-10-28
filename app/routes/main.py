@@ -59,7 +59,7 @@ def index():
 
     featured_stays = (
         Property.query
-        .filter_by(approval_status='approved')
+        .filter_by(approval_status='approved', availability_status='available')
         .order_by(
             Property.featured.desc(),
             Property.property_id.desc()
@@ -70,7 +70,7 @@ def index():
 
     popular_vehicles = (
         Vehicle.query
-        .filter_by(approval_status='approved')
+        .filter_by(approval_status='approved', availability_status='available')
         .order_by(
             Vehicle.featured.desc(),
             Vehicle.vehicle_id.desc()
@@ -88,13 +88,13 @@ def index():
 
     stays_count = (
         Property.query
-        .filter_by(approval_status='approved')
+        .filter_by(approval_status='approved', availability_status='available')
         .count()
     )
 
     vehicles_count = (
         Vehicle.query
-        .filter_by(approval_status='approved')
+        .filter_by(approval_status='approved', availability_status='available')
         .count()
     )
 
@@ -151,7 +151,8 @@ def stays():
     ).strip()
 
     query = Property.query.filter_by(
-        approval_status='approved'
+        approval_status='approved',
+        availability_status='available'
     )
 
     if district and district in [
@@ -247,7 +248,7 @@ def stay_details(property_id):
         abort(404)
 
     if (
-        prop.approval_status != 'approved'
+        (prop.approval_status != 'approved' or prop.availability_status != 'available')
         and session.get('user_role') not in ['admin', 'owner']
     ):
         abort(404)
@@ -256,6 +257,7 @@ def stay_details(property_id):
         Property.query
         .filter(
             Property.approval_status == 'approved',
+            Property.availability_status == 'available',
             Property.property_id != prop.property_id,
             Property.district == prop.district
         )
@@ -319,7 +321,8 @@ def vehicles():
     ).strip()
 
     query = Vehicle.query.filter_by(
-        approval_status='approved'
+        approval_status='approved',
+        availability_status='available'
     )
 
     if district and district in [
@@ -416,7 +419,7 @@ def vehicle_details(vehicle_id):
         abort(404)
 
     if (
-        veh.approval_status != 'approved'
+        (veh.approval_status != 'approved' or veh.availability_status != 'available')
         and session.get('user_role') not in ['admin', 'owner']
     ):
         abort(404)
@@ -425,6 +428,7 @@ def vehicle_details(vehicle_id):
         Vehicle.query
         .filter(
             Vehicle.approval_status == 'approved',
+            Vehicle.availability_status == 'available',
             Vehicle.vehicle_id != veh.vehicle_id,
             Vehicle.vehicle_type == veh.vehicle_type
         )
@@ -530,15 +534,15 @@ def booking():
             item_id
         )
 
-    if not item:
+    if not item or item.approval_status != 'approved' or item.availability_status != 'available':
 
         flash(
-            'Please select a valid property or vehicle to book.',
+            'The selected listing is currently not available for booking.',
             'warning'
         )
 
         return redirect(
-            url_for('main.stays')
+            url_for('main.stays') if listing_type == 'property' else url_for('main.vehicles')
         )
 
     start_date = request.args.get(
@@ -777,18 +781,7 @@ def create_razorpay_order():
 
 
 # ============================================================================
-# PAYMENT PROCESS
-# EXISTING DEMO / SANDBOX PAYMENT
-# ============================================================================
-#
-# This route is kept because your existing UniRent project already uses it.
-# The new Razorpay Standard Checkout will use:
-#
-#     /api/create-order
-#     /api/verify-payment
-#
-# instead.
-#
+# PAYMENT PROCESS - SIMULATOR DISABLED (RAZORPAY TEST MODE ONLY)
 # ============================================================================
 
 @main_bp.route(
@@ -796,540 +789,14 @@ def create_razorpay_order():
     methods=['POST']
 )
 def process_demo_payment():
-
-    print(
-        "\n============================================================"
-    )
-
-    print(
-        "              UNIRENT PAYMENT PROCESS"
-    )
-
-    print(
-        "============================================================"
-    )
-
-    try:
-
-        data = request.get_json(
-            silent=True
-        ) or {}
-
-        print(
-            "Received payment data:",
-            data
-        )
-
-        booking_ref = str(
-            data.get(
-                'booking_reference',
-                ''
-            )
-        ).strip()
-
-        payment_method = str(
-            data.get(
-                'payment_method',
-                'card'
-            )
-        ).strip().lower()
-
-        if not booking_ref:
-
-            return jsonify({
-                'success': False,
-                'message': 'Booking reference is missing.'
-            }), 400
-
-        allowed_methods = [
-            'card',
-            'upi',
-            'netbanking'
-        ]
-
-        if payment_method not in allowed_methods:
-
-            return jsonify({
-                'success': False,
-                'message':
-                    'Invalid payment method. '
-                    f'Allowed methods: {", ".join(allowed_methods)}'
-            }), 400
-
-        # ----------------------------------------------------------
-        # Find booking
-        # ----------------------------------------------------------
-
-        booking_obj = (
-            Booking.query
-            .filter_by(
-                booking_reference=booking_ref
-            )
-            .first()
-        )
-
-        if not booking_obj:
-
-            return jsonify({
-                'success': False,
-                'message': 'Booking record not found.'
-            }), 404
-
-        print(
-            f"Processing booking: "
-            f"ID={booking_obj.booking_id}, "
-            f"Ref={booking_obj.booking_reference}, "
-            f"Amount={booking_obj.total_amount}"
-        )
-
-        # ----------------------------------------------------------
-        # Check if genuinely already paid
-        # ----------------------------------------------------------
-
-        existing_payment = booking_obj.payment
-
-        if (
-            existing_payment
-            and existing_payment.payment_status in (
-                'successful',
-                'approved',
-                'completed'
-            )
-            and booking_obj.booking_status == 'confirmed'
-        ):
-
-            txn_id = getattr(
-                existing_payment,
-                'transaction_reference',
-                getattr(
-                    existing_payment,
-                    'transaction_id',
-                    ''
-                )
-            )
-
-            print(
-                "Booking is already confirmed and paid. "
-                "Txn:",
-                txn_id
-            )
-
-            return jsonify({
-                'success': True,
-                'already_paid': True,
-                'booking_id':
-                    booking_obj.booking_id,
-                'booking_reference':
-                    booking_obj.booking_reference,
-                'transaction_id':
-                    txn_id,
-                'message':
-                    'Payment has already been completed.'
-            }), 200
-
-        # ----------------------------------------------------------
-        # Generate unique demo transaction ID
-        # ----------------------------------------------------------
-
-        transaction_id = (
-            f"TXN-RPY-{uuid.uuid4().hex[:12].upper()}"
-        )
-
-        # ----------------------------------------------------------
-        # Create or update Payment record
-        # ----------------------------------------------------------
-
-        if existing_payment:
-
-            existing_payment.amount = (
-                booking_obj.total_amount
-            )
-
-            existing_payment.payment_method = (
-                payment_method
-            )
-
-            existing_payment.transaction_reference = (
-                transaction_id
-            )
-
-            existing_payment.payment_status = (
-                'successful'
-            )
-
-            existing_payment.payment_date = (
-                datetime.utcnow()
-            )
-
-        else:
-
-            new_payment = Payment(
-                booking_id=booking_obj.booking_id,
-                amount=booking_obj.total_amount,
-                payment_method=payment_method,
-                transaction_reference=transaction_id,
-                payment_status='successful',
-                payment_date=datetime.utcnow()
-            )
-
-            db.session.add(
-                new_payment
-            )
-
-        # ----------------------------------------------------------
-        # Confirm booking
-        # ----------------------------------------------------------
-
-        booking_obj.booking_status = (
-            'confirmed'
-        )
-
-        # ----------------------------------------------------------
-        # Commit transaction to MySQL
-        # ----------------------------------------------------------
-
-        db.session.commit()
-
-        print(
-            "Payment record and confirmed booking "
-            "committed successfully to database."
-        )
-
-        # ----------------------------------------------------------
-        # Safe print helper
-        # ----------------------------------------------------------
-
-        def safe_print(*args, **kwargs):
-
-            try:
-
-                print(
-                    *args,
-                    **kwargs
-                )
-
-            except Exception:
-
-                try:
-
-                    clean_args = [
-                        str(a)
-                        .encode(
-                            'ascii',
-                            errors='replace'
-                        )
-                        .decode('ascii')
-                        for a in args
-                    ]
-
-                    print(
-                        *clean_args,
-                        **kwargs
-                    )
-
-                except Exception:
-
-                    pass
-
-        # ----------------------------------------------------------
-        # Prepare confirmation email
-        # ----------------------------------------------------------
-
-        email_sent = False
-
-        try:
-
-            user = getattr(
-                booking_obj,
-                'user',
-                None
-            )
-
-            user_email = (
-                getattr(
-                    user,
-                    'email',
-                    None
-                )
-                if user
-                else None
-            )
-
-            user_name = (
-                getattr(
-                    user,
-                    'full_name',
-                    'Valued Traveler'
-                )
-                if user
-                else 'Valued Traveler'
-            )
-
-            # Get listing name safely
-            listing_name = 'UniRent Rental'
-
-            if booking_obj.listing_type == 'property':
-
-                property_obj = db.session.get(
-                    Property,
-                    booking_obj.property_id
-                )
-
-                if property_obj:
-
-                    listing_name = (
-                        property_obj.property_name
-                    )
-
-            elif booking_obj.listing_type == 'vehicle':
-
-                vehicle_obj = db.session.get(
-                    Vehicle,
-                    booking_obj.vehicle_id
-                )
-
-                if vehicle_obj:
-
-                    listing_name = (
-                        vehicle_obj.vehicle_name
-                    )
-
-            duration_unit = (
-                'night(s)'
-                if booking_obj.listing_type == 'property'
-                else 'day(s)'
-            )
-
-            booking_dates = (
-                f"{booking_obj.start_date.strftime('%b %d, %Y')} "
-                f"to "
-                f"{booking_obj.end_date.strftime('%b %d, %Y')} "
-                f"({booking_obj.total_days} {duration_unit})"
-            )
-
-            total_amount_display = (
-                f"Rs. "
-                f"{float(booking_obj.total_amount):,.2f}"
-            )
-
-            subject = (
-                f"UniRent Booking Confirmation - "
-                f"{booking_obj.booking_reference}"
-            )
-
-            email_body = f"""Hello {user_name},
-
-Your UniRent booking has been successfully confirmed!
-
-Here are your verified reservation details:
---------------------------------------------------
-Traveler Name     : {user_name}
-Booking Reference : {booking_obj.booking_reference}
-Property / Vehicle: {listing_name}
-Booking Dates     : {booking_dates}
-Total Amount      : {total_amount_display}
-Payment Method    : {payment_method.upper()}
-Transaction ID    : {transaction_id}
-Booking Status    : Successfully Confirmed
---------------------------------------------------
-
-We look forward to hosting you for an unforgettable Kerala experience.
-You can view and print your booking receipt anytime from your traveler portal.
-
-Thank you for choosing UniRent Kerala!
-
-Warm regards,
-UniRent Kerala Team
-Heritage Stays & Vehicle Rentals
-"""
-
-            if user_email:
-
-                try:
-
-                    mail = (
-                        current_app
-                        .extensions
-                        .get('mail')
-                    )
-
-                    if (
-                        mail
-                        and (
-                            current_app.config.get(
-                                'MAIL_USERNAME'
-                            )
-                            or current_app.config.get(
-                                'TESTING'
-                            )
-                        )
-                    ):
-
-                        from flask_mail import Message
-
-                        message = Message(
-                            subject=subject,
-                            recipients=[user_email],
-                            body=email_body,
-                            sender=current_app.config.get(
-                                'MAIL_DEFAULT_SENDER',
-                                'noreply@unirent.com'
-                            )
-                        )
-
-                        mail.send(
-                            message
-                        )
-
-                        email_sent = True
-
-                        safe_print(
-                            "Confirmation email successfully "
-                            "sent via Flask-Mail to:",
-                            user_email
-                        )
-
-                    else:
-
-                        safe_print(
-                            "------------------------------------------------------------"
-                        )
-
-                        safe_print(
-                            "DEMO EMAIL DISPATCH "
-                            "(Flask-Mail Simulator):"
-                        )
-
-                        safe_print(
-                            f"To: {user_email}"
-                        )
-
-                        safe_print(
-                            f"Subject: {subject}"
-                        )
-
-                        safe_print(
-                            email_body
-                        )
-
-                        safe_print(
-                            "------------------------------------------------------------"
-                        )
-
-                        email_sent = True
-
-                except Exception as email_error:
-
-                    safe_print(
-                        f"Notice: SMTP delivery failed "
-                        f"({email_error}). "
-                        "Logging email content:"
-                    )
-
-                    safe_print(
-                        email_body
-                    )
-
-                    email_sent = False
-
-            else:
-
-                safe_print(
-                    "No traveler email found for booking."
-                )
-
-        except Exception as email_outer_err:
-
-            safe_print(
-                f"Email preparation notice: "
-                f"{email_outer_err}"
-            )
-
-            email_sent = False
-
-        print(
-            "============================================================"
-        )
-
-        print(
-            "PAYMENT PROCESSED SUCCESSFULLY"
-        )
-
-        print(
-            "Booking ID:",
-            booking_obj.booking_id
-        )
-
-        print(
-            "Booking Ref:",
-            booking_obj.booking_reference
-        )
-
-        print(
-            "Transaction:",
-            transaction_id
-        )
-
-        print(
-            "Email sent:",
-            email_sent
-        )
-
-        print(
-            "============================================================\n"
-        )
-
-        return jsonify({
-
-            'success': True,
-
-            'booking_id':
-                booking_obj.booking_id,
-
-            'booking_reference':
-                booking_obj.booking_reference,
-
-            'transaction_id':
-                transaction_id,
-
-            'email_sent':
-                email_sent,
-
-            'message':
-                'Payment successful! '
-                'Your booking is confirmed.'
-
-        }), 200
-
-    except Exception as error:
-
-        db.session.rollback()
-
-        print(
-            "\n============================================================"
-        )
-
-        print(
-            "PAYMENT ERROR:",
-            str(error)
-        )
-
-        print(
-            "============================================================\n"
-        )
-
-        return jsonify({
-
-            'success': False,
-
-            'message':
-                'Unable to process payment. '
-                'Please try again.',
-
-            'error':
-                str(error)
-
-        }), 500
+    """
+    Simulate Test Mode payment has been deprecated in favor of Razorpay Test Mode.
+    All payments must go through Razorpay Test Mode (/api/create-order and /api/verify-payment).
+    """
+    return jsonify({
+        'success': False,
+        'message': 'Simulated test mode payment is disabled. All payments must be completed through Razorpay Test Mode.'
+    }), 400
 
 
 # ============================================================================
@@ -1613,6 +1080,52 @@ def verify_razorpay_payment():
 
 
 # ============================================================================
+# RAZORPAY - PAYMENT FAILED / CANCELLED HANDLER
+# ============================================================================
+
+@main_bp.route(
+    '/api/payment-failed',
+    methods=['POST']
+)
+def handle_payment_failed():
+    try:
+        data = request.get_json(silent=True) or {}
+        booking_ref = str(data.get('booking_reference', '')).strip()
+        error_desc = str(data.get('error_description', 'Payment failed or cancelled')).strip()
+
+        if booking_ref:
+            booking_obj = Booking.query.filter_by(booking_reference=booking_ref).first()
+            if booking_obj and booking_obj.booking_status == 'pending':
+                if booking_obj.payment:
+                    booking_obj.payment.payment_status = 'failed'
+                    booking_obj.payment.gateway_response = error_desc
+                else:
+                    new_payment = Payment(
+                        booking_id=booking_obj.booking_id,
+                        amount=booking_obj.total_amount,
+                        payment_method='razorpay',
+                        transaction_reference=f"FAIL-{uuid.uuid4().hex[:10].upper()}",
+                        payment_status='failed',
+                        gateway_response=error_desc,
+                        payment_date=datetime.utcnow()
+                    )
+                    db.session.add(new_payment)
+                db.session.commit()
+
+        return jsonify({
+            'success': False,
+            'message': 'Payment failure recorded.'
+        }), 200
+    except Exception as error:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': 'Error recording payment failure.',
+            'error': str(error)
+        }), 500
+
+
+# ============================================================================
 # BOOKING CONFIRMATION
 # ============================================================================
 
@@ -1769,7 +1282,7 @@ def download_receipt(booking_id):
         "Booking Details"
     )
 
-    y -= 25
+    y -= 22
 
     pdf.setFont(
         "Helvetica",
@@ -1779,51 +1292,57 @@ def download_receipt(booking_id):
     pdf.drawString(
         50,
         y,
-        f"Booking Reference: "
-        f"{booking.booking_reference}"
+        f"Booking Reference: {booking.booking_reference}"
     )
 
-    y -= 20
+    y -= 18
 
     pdf.drawString(
         50,
         y,
-        f"Booking Status: "
-        f"{booking.booking_status.capitalize()}"
+        f"Booking Status: {booking.booking_status.capitalize()}"
     )
 
-    y -= 20
+    y -= 18
 
+    guest_name = booking.user.full_name if booking.user else "Valued Traveler"
     pdf.drawString(
         50,
         y,
-        f"Start Date: "
-        f"{booking.start_date.strftime('%d %B %Y')}"
+        f"Traveler / Guest: {guest_name}"
     )
 
-    y -= 20
+    if booking.listing_type == 'property' and booking.identity_type:
+        y -= 18
+        masked_id = booking.get_masked_identity_number() or "Verified"
+        pdf.drawString(
+            50,
+            y,
+            f"Verification: {booking.identity_type} ({masked_id})"
+        )
+    elif booking.listing_type == 'vehicle' and booking.driver_license_number:
+        y -= 18
+        masked_dl = booking.get_masked_driver_license() or "Verified"
+        pdf.drawString(
+            50,
+            y,
+            f"Verification: Driver's License ({masked_dl})"
+        )
 
+    y -= 18
+
+    unit_name = "Night(s)" if booking.listing_type == 'property' else "Day(s)"
     pdf.drawString(
         50,
         y,
-        f"End Date: "
-        f"{booking.end_date.strftime('%d %B %Y')}"
-    )
-
-    y -= 20
-
-    pdf.drawString(
-        50,
-        y,
-        f"Total Days: "
-        f"{booking.total_days}"
+        f"Dates: {booking.start_date.strftime('%d %B %Y')} to {booking.end_date.strftime('%d %B %Y')} ({booking.total_days} {unit_name})"
     )
 
     # ----------------------------------------------------------
     # Rental Details
     # ----------------------------------------------------------
 
-    y -= 45
+    y -= 35
 
     pdf.setFont(
         "Helvetica-Bold",
@@ -1836,7 +1355,7 @@ def download_receipt(booking_id):
         "Rental Details"
     )
 
-    y -= 25
+    y -= 22
 
     pdf.setFont(
         "Helvetica",
@@ -1844,63 +1363,45 @@ def download_receipt(booking_id):
     )
 
     listing_name = "UniRent Rental"
+    district_str = "Kerala"
 
     if booking.listing_type == 'property':
-
-        property_obj = db.session.get(
-            Property,
-            booking.property_id
-        )
-
+        property_obj = db.session.get(Property, booking.property_id)
         if property_obj:
-
-            listing_name = (
-                property_obj.property_name
-            )
+            listing_name = property_obj.property_name
+            district_str = f"{property_obj.district}, Kerala"
 
         pdf.drawString(
             50,
             y,
             "Rental Type: Heritage Stay"
         )
-
-        y -= 20
-
+        y -= 18
         pdf.drawString(
             50,
             y,
-            f"Property: {listing_name}"
+            f"Property: {listing_name} ({district_str})"
         )
 
     elif booking.listing_type == 'vehicle':
-
-        vehicle_obj = db.session.get(
-            Vehicle,
-            booking.vehicle_id
-        )
-
+        vehicle_obj = db.session.get(Vehicle, booking.vehicle_id)
         if vehicle_obj:
-
-            listing_name = (
-                vehicle_obj.vehicle_name
-            )
+            listing_name = f"{vehicle_obj.vehicle_name} ({vehicle_obj.model})"
+            district_str = f"{vehicle_obj.district}, Kerala"
 
         pdf.drawString(
             50,
             y,
-            "Rental Type: Vehicle"
+            "Rental Type: Rental Vehicle"
         )
-
-        y -= 20
-
+        y -= 18
         pdf.drawString(
             50,
             y,
-            f"Vehicle: {listing_name}"
+            f"Vehicle: {listing_name} ({district_str})"
         )
 
     else:
-
         pdf.drawString(
             50,
             y,
@@ -1911,7 +1412,7 @@ def download_receipt(booking_id):
     # Payment Details
     # ----------------------------------------------------------
 
-    y -= 45
+    y -= 35
 
     pdf.setFont(
         "Helvetica-Bold",
@@ -1924,7 +1425,7 @@ def download_receipt(booking_id):
         "Payment Details"
     )
 
-    y -= 25
+    y -= 22
 
     pdf.setFont(
         "Helvetica",
@@ -1934,56 +1435,48 @@ def download_receipt(booking_id):
     payment = booking.payment
 
     if payment:
-
         pdf.drawString(
             50,
             y,
-            f"Payment Method: "
-            f"{payment.payment_method.upper()}"
+            f"Payment Method: {payment.payment_method.upper()}"
         )
-
-        y -= 20
-
+        y -= 18
         pdf.drawString(
             50,
             y,
-            f"Transaction ID: "
-            f"{payment.transaction_reference}"
+            f"Transaction Reference: {payment.transaction_reference}"
         )
-
-        y -= 20
-
+        y -= 18
         pdf.drawString(
             50,
             y,
-            f"Payment Status: "
-            f"{payment.payment_status.capitalize()}"
+            f"Payment Status: {payment.payment_status.capitalize()}"
         )
-
-        y -= 20
-
         if payment.payment_date:
-
+            y -= 18
             pdf.drawString(
                 50,
                 y,
-                f"Payment Date: "
-                f"{payment.payment_date.strftime('%d %B %Y, %I:%M %p')}"
+                f"Payment Date: {payment.payment_date.strftime('%d %B %Y, %I:%M %p')}"
             )
-
     else:
-
         pdf.drawString(
             50,
             y,
-            "Payment information unavailable."
+            f"Payment Status: {booking.booking_status.capitalize()}"
+        )
+        y -= 18
+        pdf.drawString(
+            50,
+            y,
+            "Transaction Reference: Pending Confirmation"
         )
 
     # ----------------------------------------------------------
-    # Amount Summary
+    # Amount Summary Breakdown
     # ----------------------------------------------------------
 
-    y -= 45
+    y -= 35
 
     pdf.setFont(
         "Helvetica-Bold",
@@ -1993,53 +1486,58 @@ def download_receipt(booking_id):
     pdf.drawString(
         50,
         y,
-        "Amount Summary"
+        "Price Breakdown"
     )
 
-    y -= 25
+    y -= 22
 
     pdf.setFont(
         "Helvetica",
         10
     )
 
+    subtotal_val = float(booking.daily_rate) * float(booking.total_days)
     pdf.drawString(
         50,
         y,
-        f"Daily Rate: "
-        f"Rs. {float(booking.daily_rate):,.2f}"
+        f"Rental Subtotal: Rs. {subtotal_val:,.2f} ({booking.total_days} {unit_name} @ Rs. {float(booking.daily_rate):,.2f})"
     )
 
-    y -= 20
-
-    pdf.drawString(
-        50,
-        y,
-        f"Service Fee: "
-        f"Rs. {float(booking.service_fee):,.2f}"
-    )
-
-    y -= 20
+    y -= 18
 
     pdf.drawString(
         50,
         y,
-        f"Tax: "
-        f"Rs. {float(booking.tax_amount):,.2f}"
+        f"Traveler Service Charge (5%): Rs. {float(booking.service_fee):,.2f}"
     )
 
-    y -= 30
+    y -= 18
+
+    pdf.drawString(
+        50,
+        y,
+        f"Taxes & GST (12%): Rs. {float(booking.tax_amount):,.2f}"
+    )
+
+    if booking.listing_type == 'vehicle' and booking.security_deposit and booking.security_deposit > 0:
+        y -= 18
+        pdf.drawString(
+            50,
+            y,
+            f"Refundable Security Deposit: Rs. {float(booking.security_deposit):,.2f}"
+        )
+
+    y -= 25
 
     pdf.setFont(
         "Helvetica-Bold",
-        15
+        14
     )
 
     pdf.drawString(
         50,
         y,
-        f"Total Paid: "
-        f"Rs. {float(booking.total_amount):,.2f}"
+        f"Total Paid: Rs. {float(booking.total_amount):,.2f}"
     )
 
     # ----------------------------------------------------------

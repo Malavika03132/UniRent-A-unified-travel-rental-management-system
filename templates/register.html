@@ -77,7 +77,7 @@
             placeholder="e.g. Maya Nair"
             required
           >
-          <small style="color: var(--ur-muted); font-size: 0.78rem;">Must match your official government identity document.</small>
+          <small style="color: var(--ur-muted); font-size: 0.78rem;"></small>
         </div>
 
         <!-- Email + Phone -->
@@ -110,7 +110,7 @@
               placeholder="+91 98470 00000"
               required
             >
-            <small style="color: var(--ur-muted); font-size: 0.78rem;">10-digit Indian mobile number.</small>
+            <small style="color: var(--ur-muted); font-size: 0.78rem;"></small>
           </div>
         </div>
 
@@ -120,30 +120,36 @@
         <div class="kyc-verification-box" style="background: var(--ur-ivory); border: 1.5px solid var(--ur-border); border-radius: var(--radius-sm); padding: 1.25rem; margin-bottom: 1.25rem;">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
             <span style="font-size: 0.82rem; font-weight: 700; color: var(--ur-burnt-orange); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.35rem;">
-              🛡️ Government Identity KYC
+              🛡️ Identity Verification
             </span>
-            <span class="badge badge-approved" style="font-size: 0.72rem;">Mandatory Verification</span>
+            <span class="badge badge-approved" style="font-size: 0.72rem;"></span>
           </div>
           <p style="font-size: 0.8rem; color: var(--ur-muted); margin-bottom: 0.9rem; line-height: 1.4;">
-            Required by Kerala Tourism & Mobility Regulatory Guidelines. Verified for safety across stays and vehicle rentals.
+            .
           </p>
 
           <div class="form-group" style="margin-bottom: 0.9rem;">
             <label for="reg_kyc_type" style="font-size: 0.85rem; font-weight: 600;">
-              KYC Document Type <span style="color: #dc3545;">*</span>
+              Document Type <span style="color: #dc3545;">*</span>
             </label>
             <select id="reg_kyc_type" name="kyc_document_type" class="form-control" required>
-              <option value="" disabled {% if not data or not data.kyc_document_type %}selected{% endif %}>-- Select Government Identity Document --</option>
               <option value="pan_card" {% if data and data.kyc_document_type == 'pan_card' %}selected{% endif %}>PAN Card (Income Tax Dept, India)</option>
-              <option value="passport" {% if data and data.kyc_document_type == 'passport' %}selected{% endif %}>Indian / International Passport</option>
-              <option value="voter_id" {% if data and data.kyc_document_type == 'voter_id' %}selected{% endif %}>Voter ID / Election Card (EPIC)</option>
-              <option value="driving_license" {% if data and data.kyc_document_type == 'driving_license' %}selected{% endif %}>Driving Licence (Transport Dept)</option>
+
+             <option value="passport" {% if data and data.kyc_document_type == 'passport' %}selected{% endif %}>Indian / International Passport</option>
+
+            <option value="voter_id" {% if data and data.kyc_document_type == 'voter_id' %}selected{% endif %}>Voter ID / Election Card (EPIC)</option>
+
+            <option value="driving_license" {% if data and data.kyc_document_type == 'driving_license' %}selected{% endif %}>Driving Licence (Transport Dept)</option>
+
+           <option value="Ernakulam" {% if not data or data.district == 'Ernakulam' %}selected{% endif %}>Ernakulam (Kochi / Aluva / Cherai / Fort Kochi)</option>
+
+          <option value="Thrissur" {% if data and data.district == 'Thrissur' %}selected{% endif %}>Thrissur (Cultural Capital / Guruvayur / Athirappilly)</option>
             </select>
           </div>
 
           <div class="form-group" id="kyc_number_group" style="margin-bottom: 0;">
             <label for="reg_kyc_number" id="reg_kyc_number_label" style="font-size: 0.85rem; font-weight: 600;">
-              KYC Document Number <span style="color: #dc3545;">*</span>
+              Document Number <span style="color: #dc3545;">*</span>
             </label>
             <input
               type="text"
@@ -170,10 +176,10 @@
             <span style="font-size: 0.82rem; font-weight: 700; color: var(--ur-burnt-orange); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.35rem;">
               🏡 Host Partner Information
             </span>
-            <span class="badge badge-approved" style="font-size: 0.72rem;">Verified Host</span>
+            <span class="badge badge-approved" style="font-size: 0.72rem;"></span>
           </div>
           <p style="font-size: 0.8rem; color: var(--ur-muted); margin-bottom: 0.9rem; line-height: 1.4;">
-            Your personal government KYC above authenticates your host profile for offering heritage stays and rental vehicles.
+            
           </p>
 
           <div class="form-group" style="margin-bottom: 0.9rem;">
@@ -254,7 +260,7 @@
           class="btn btn-primary btn-block btn-lg"
           style="margin-bottom: 1.2rem;"
         >
-          Complete Registration & Verify KYC
+          Complete Registration 
         </button>
 
         <!-- Login -->

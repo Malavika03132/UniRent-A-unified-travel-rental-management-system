@@ -63,10 +63,17 @@
             {% endif %}
           </td>
           <td>
-            <div style="display:flex; gap:0.4rem;">
+            <div style="display:flex; gap:0.4rem; align-items:center;">
               <a href="{{ url_for('main.confirmation', ref=b.booking_reference) }}" class="btn btn-outline btn-sm">Receipt</a>
-              {% if b.booking_status == 'completed' and not b.review %}
+              {% if b.booking_status in ['completed', 'confirmed'] and not b.review %}
                 <a href="{{ url_for('traveler.reviews') }}" class="btn btn-secondary btn-sm">Review</a>
+              {% endif %}
+              {% if b.booking_status in ['pending', 'confirmed'] %}
+                <form action="{{ url_for('traveler.cancel_booking', booking_id=b.booking_id) }}" method="POST" style="margin:0;">
+                  <button type="submit" class="btn btn-outline btn-sm" style="color:#c5221f; border-color:#f5c6cb;" onclick="return confirm('Are you sure you want to cancel booking {{ b.booking_reference }}? This will release your reserved dates.');">
+                    Cancel
+                  </button>
+                </form>
               {% endif %}
               <a href="{{ url_for('traveler.complaints') }}" class="btn btn-outline btn-sm" title="Report issue">Support</a>
             </div>

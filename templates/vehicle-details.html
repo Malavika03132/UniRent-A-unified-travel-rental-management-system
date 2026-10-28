@@ -38,9 +38,11 @@
     </div>
   </div>
 
-  <!-- Image Showcase -->
-  <div style="border-radius: var(--radius-md); overflow: hidden; height: 420px; margin-bottom: 3rem; box-shadow: var(--shadow-md); border: 1px solid var(--ur-border);">
-    <img src="{{ vehicle.featured_image }}" alt="{{ vehicle.vehicle_name }}" style="width:100%; height:100%; object-fit:cover;">
+  <!-- Image Gallery Grid (Main, Profile, Cockpit/Interior) -->
+  <div class="details-hero-grid">
+    {% for img_url in vehicle.images_list %}
+      <img src="{{ img_url }}" alt="{{ vehicle.vehicle_name }}" loading="lazy">
+    {% endfor %}
   </div>
 
   <!-- Layout: Details & Booking Widget -->
@@ -175,9 +177,13 @@
               <span>Applicable GST (12%)</span>
               <span>{{ format_currency(vehicle.price_per_day * 0.12) }}</span>
             </div>
+            <div class="price-row" style="color: var(--ur-burnt-orange); font-weight: 500;">
+              <span>Refundable Caution Deposit</span>
+              <span>{{ format_currency(vehicle.security_deposit or 2000.0) }}</span>
+            </div>
             <div class="price-row total">
-              <span>Estimated (1 Day)</span>
-              <span>{{ format_currency(vehicle.price_per_day * 1.17) }}</span>
+              <span>Estimated (1 Day Total)</span>
+              <span>{{ format_currency((vehicle.price_per_day * 1.17) + (vehicle.security_deposit or 2000.0)) }}</span>
             </div>
           </div>
 

@@ -23,6 +23,7 @@
         <th>District</th>
         <th>Price / Night</th>
         <th>Approval</th>
+        <th>Availability</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -52,7 +53,24 @@
             {% endif %}
           </td>
           <td>
-            <a href="{{ url_for('main.stay_details', property_id=p.property_id) }}" class="btn btn-outline btn-sm" target="_blank">View</a>
+            {% if p.availability_status == 'available' %}
+              <span class="badge badge-approved">Active</span>
+            {% else %}
+              <span class="badge badge-rejected">Deactivated</span>
+            {% endif %}
+          </td>
+          <td>
+            <div style="display: flex; gap: 0.35rem; align-items: center;">
+              <a href="{{ url_for('main.stay_details', property_id=p.property_id) }}" class="btn btn-outline btn-sm" target="_blank" style="padding: 0.25rem 0.6rem;">View</a>
+              <a href="{{ url_for('admin.edit_property', property_id=p.property_id) }}" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.6rem;">Edit</a>
+              <form action="{{ url_for('admin.deactivate_property', property_id=p.property_id) }}" method="POST" style="display:inline; margin:0;">
+                {% if p.availability_status == 'available' %}
+                  <button type="submit" class="btn btn-outline btn-sm" style="color: #c5221f; border-color: #f5c2c7; padding: 0.25rem 0.6rem;" onclick="return confirm('Deactivate listing \'{{ p.property_name }}\'?')">Deactivate</button>
+                {% else %}
+                  <button type="submit" class="btn btn-outline btn-sm" style="color: #1e7e34; border-color: #c3e6cb; padding: 0.25rem 0.6rem;">Reactivate</button>
+                {% endif %}
+              </form>
+            </div>
           </td>
         </tr>
       {% endfor %}

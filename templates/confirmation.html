@@ -16,18 +16,46 @@
         ✓
       </div>
 
-      <span class="badge badge-approved" style="font-size: 0.85rem; padding: 0.35rem 0.9rem; margin-bottom: 0.8rem;">
-        Booking Confirmed
-      </span>
-
-      <h1 style="font-size: 2.2rem; margin-bottom: 0.5rem;">
-        You’re Kerala Bound!
-      </h1>
-
-      <p style="color: var(--ur-muted); font-size: 1.05rem; max-width: 540px; margin: 0 auto 1.8rem;">
-        Your reservation for <strong>{{ booking.listing_name }}</strong> is confirmed.
-        Your payment has been successfully processed.
-      </p>
+      {% if booking.booking_status == 'confirmed' %}
+        <span class="badge badge-approved" style="font-size: 0.85rem; padding: 0.35rem 0.9rem; margin-bottom: 0.8rem;">
+          Booking Confirmed
+        </span>
+        <h1 style="font-size: 2.2rem; margin-bottom: 0.5rem;">
+          You’re Kerala Bound!
+        </h1>
+        <p style="color: var(--ur-muted); font-size: 1.05rem; max-width: 540px; margin: 0 auto 1.8rem;">
+          Your reservation for <strong>{{ booking.listing_name }}</strong> is confirmed.
+          Your payment has been successfully processed.
+        </p>
+      {% elif booking.booking_status == 'pending' %}
+        <span class="badge badge-pending" style="font-size: 0.85rem; padding: 0.35rem 0.9rem; margin-bottom: 0.8rem;">
+          Payment Pending
+        </span>
+        <h1 style="font-size: 2.2rem; margin-bottom: 0.5rem;">
+          Reservation Initialized
+        </h1>
+        <p style="color: var(--ur-muted); font-size: 1.05rem; max-width: 540px; margin: 0 auto 1.8rem;">
+          Your reservation for <strong>{{ booking.listing_name }}</strong> is awaiting payment completion.
+          <a href="{{ url_for('main.payment', booking_id=booking.booking_id, ref=booking.booking_reference) }}" class="btn btn-primary btn-sm" style="margin-left: 0.5rem;">Complete Payment</a>
+        </p>
+      {% elif booking.booking_status == 'cancelled' %}
+        <span class="badge badge-rejected" style="font-size: 0.85rem; padding: 0.35rem 0.9rem; margin-bottom: 0.8rem;">
+          Booking Cancelled
+        </span>
+        <h1 style="font-size: 2.2rem; margin-bottom: 0.5rem;">
+          Reservation Cancelled
+        </h1>
+        <p style="color: var(--ur-muted); font-size: 1.05rem; max-width: 540px; margin: 0 auto 1.8rem;">
+          This reservation for <strong>{{ booking.listing_name }}</strong> has been cancelled.
+        </p>
+      {% else %}
+        <span class="badge badge-approved" style="font-size: 0.85rem; padding: 0.35rem 0.9rem; margin-bottom: 0.8rem;">
+          {{ booking.booking_status|capitalize }}
+        </span>
+        <h1 style="font-size: 2.2rem; margin-bottom: 0.5rem;">
+          {{ booking.listing_name }}
+        </h1>
+      {% endif %}
 
       <!-- Booking Reference -->
       <div style="background: var(--ur-ivory); border: 1px dashed var(--ur-burnt-orange); border-radius: var(--radius-sm); padding: 1.2rem; display: inline-block; margin-bottom: 2rem;">
@@ -52,7 +80,7 @@
           {% if booking.payment and booking.payment.payment_status in ['successful', 'approved', 'completed'] %}
 
             <span class="badge badge-approved" style="font-size: 0.75rem;">
-              ✓ Paid via Sandbox
+              ✓ Paid via {{ (booking.payment.payment_method or 'Gateway')|capitalize }}
             </span>
 
           {% else %}
@@ -212,14 +240,6 @@
         >
           ⬇️ Download Receipt
         </a>
-
-        <!-- PRINT -->
-        <button
-          onclick="window.print()"
-          class="btn btn-secondary"
-        >
-          🖨️ Print Receipt
-        </button>
 
         <!-- TRAVELER PORTAL -->
         <a

@@ -68,6 +68,14 @@
               {% endif %}
             </div>
           </div>
+          {% if p.approval_status == 'rejected' %}
+            <div style="background: #fff3f2; border: 1px solid #f5c2c7; border-radius: var(--radius-sm); padding: 0.6rem 0.9rem; margin-top: -0.4rem; font-size: 0.82rem; color: #842029; display: flex; justify-content: space-between; align-items: center; gap: 0.8rem;">
+              <div>
+                <strong>Decision: Rejected</strong> — <em>{{ p.rejection_reason or 'Requires revision before publishing.' }}</em>
+              </div>
+              <a href="{{ url_for('owner.properties') }}" class="btn btn-outline btn-sm" style="white-space: nowrap; font-size: 0.75rem; padding: 0.2rem 0.5rem; border-color: #842029; color: #842029;">Correct & Resubmit →</a>
+            </div>
+          {% endif %}
         {% endfor %}
       </div>
     {% else %}
@@ -101,6 +109,14 @@
               {% endif %}
             </div>
           </div>
+          {% if v.approval_status == 'rejected' %}
+            <div style="background: #fff3f2; border: 1px solid #f5c2c7; border-radius: var(--radius-sm); padding: 0.6rem 0.9rem; margin-top: -0.4rem; font-size: 0.82rem; color: #842029; display: flex; justify-content: space-between; align-items: center; gap: 0.8rem;">
+              <div>
+                <strong>Decision: Rejected</strong> — <em>{{ v.rejection_reason or 'Requires revision before publishing.' }}</em>
+              </div>
+              <a href="{{ url_for('owner.vehicles') }}" class="btn btn-outline btn-sm" style="white-space: nowrap; font-size: 0.75rem; padding: 0.2rem 0.5rem; border-color: #842029; color: #842029;">Correct & Resubmit →</a>
+            </div>
+          {% endif %}
         {% endfor %}
       </div>
     {% else %}

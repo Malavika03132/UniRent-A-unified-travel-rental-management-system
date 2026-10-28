@@ -408,14 +408,54 @@ def edit_property(property_id):
         property_item.featured_image = image_url
 
     # --------------------------------------------------------
-    # SAVE
+    # SAVE & RESUBMISSION
     # --------------------------------------------------------
 
+    resubmit = request.form.get('resubmit') == '1' or property_item.approval_status == 'rejected'
+    if resubmit:
+        property_item.approval_status = 'pending'
+        property_item.rejection_reason = None
+        db.session.commit()
+        flash(
+            f"Property '{property_item.property_name}' was updated and resubmitted for Admin verification.",
+            'success'
+        )
+    else:
+        db.session.commit()
+        flash(
+            f"Property '{property_item.property_name}' was updated successfully.",
+            'success'
+        )
+
+    return redirect(
+        url_for('owner.properties')
+    )
+
+
+# ============================================================
+# RESUBMIT PROPERTY
+# ============================================================
+
+@owner_bp.route(
+    '/properties/<int:property_id>/resubmit',
+    methods=['POST']
+)
+@login_required('owner')
+def resubmit_property(property_id):
+
+    owner = get_current_owner()
+
+    property_item = Property.query.filter_by(
+        property_id=property_id,
+        owner_id=owner.owner_id
+    ).first_or_404()
+
+    property_item.approval_status = 'pending'
+    property_item.rejection_reason = None
     db.session.commit()
 
     flash(
-        f"Property '{property_item.property_name}' "
-        f"was updated successfully.",
+        f"Property '{property_item.property_name}' has been resubmitted for Admin verification.",
         'success'
     )
 
@@ -842,14 +882,54 @@ def edit_vehicle(vehicle_id):
         vehicle.featured_image = image_url
 
     # --------------------------------------------------------
-    # SAVE
+    # SAVE & RESUBMISSION
     # --------------------------------------------------------
 
+    resubmit = request.form.get('resubmit') == '1' or vehicle.approval_status == 'rejected'
+    if resubmit:
+        vehicle.approval_status = 'pending'
+        vehicle.rejection_reason = None
+        db.session.commit()
+        flash(
+            f"Vehicle '{vehicle.vehicle_name}' was updated and resubmitted for Admin verification.",
+            'success'
+        )
+    else:
+        db.session.commit()
+        flash(
+            f"Vehicle '{vehicle.vehicle_name}' was updated successfully.",
+            'success'
+        )
+
+    return redirect(
+        url_for('owner.vehicles')
+    )
+
+
+# ============================================================
+# RESUBMIT VEHICLE
+# ============================================================
+
+@owner_bp.route(
+    '/vehicles/<int:vehicle_id>/resubmit',
+    methods=['POST']
+)
+@login_required('owner')
+def resubmit_vehicle(vehicle_id):
+
+    owner = get_current_owner()
+
+    vehicle = Vehicle.query.filter_by(
+        vehicle_id=vehicle_id,
+        owner_id=owner.owner_id
+    ).first_or_404()
+
+    vehicle.approval_status = 'pending'
+    vehicle.rejection_reason = None
     db.session.commit()
 
     flash(
-        f"Vehicle '{vehicle.vehicle_name}' "
-        f"was updated successfully.",
+        f"Vehicle '{vehicle.vehicle_name}' has been resubmitted for Admin verification.",
         'success'
     )
 
@@ -1055,6 +1135,21 @@ def bookings():
         bookings=owner_bookings,
         owner=owner
     )
+
+
+@owner_bp.route('/bookings/<int:booking_id>/complete', methods=['POST'])
+@login_required('owner')
+def complete_booking(booking_id):
+    owner = get_current_owner()
+    booking = Booking.query.filter_by(
+        booking_id=booking_id,
+        owner_id=owner.owner_id
+    ).first_or_404()
+
+    booking.booking_status = 'completed'
+    db.session.commit()
+    flash(f"Booking {booking.booking_reference} marked as Completed / Checked Out.", 'success')
+    return redirect(url_for('owner.bookings'))
 
 
 # ============================================================

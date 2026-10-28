@@ -131,7 +131,9 @@ def seed_database():
             bathrooms=3,
             amenities=json.dumps(["Nadumuttom Courtyard", "Riverfront Lawn", "Traditional Kerala Kitchen", "Free High-Speed Wi-Fi", "Air Conditioning", "Lotus Pond", "Ayurvedic Spa Facility", "Covered Parking"]),
             images=json.dumps([
-                "/static/images/tharavadu.jpg"
+                "/static/images/tharavadu.jpg",
+                "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80"
             ]),
             featured_image="/static/images/tharavadu.jpg",
             approval_status="approved",
@@ -155,7 +157,9 @@ def seed_database():
             bathrooms=2,
             amenities=json.dumps(["Private Plunge Pool", "Terracotta Verandah", "Wi-Fi", "Air Conditioning", "Artisan Coffee Bar", "Heritage Walking Tour"]),
             images=json.dumps([
-                "/static/images/dutch_manor.jpg"
+                "/static/images/dutch_manor.jpg",
+                "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80"
             ]),
             featured_image="/static/images/dutch_manor.jpg",
             approval_status="approved",
@@ -179,7 +183,9 @@ def seed_database():
             bathrooms=2,
             amenities=json.dumps(["Backwater Access", "Beach Walk 200m", "Hammocks & Coconut Grove", "Wi-Fi", "Homecooked Karimeen Pollichathu", "Free Parking"]),
             images=json.dumps([
-                "/static/images/cherai_lagoon.jpg"
+                "/static/images/cherai_lagoon.jpg",
+                "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80"
             ]),
             featured_image="/static/images/cherai_lagoon.jpg",
             approval_status="approved",
@@ -203,7 +209,9 @@ def seed_database():
             bathrooms=3,
             amenities=json.dumps(["Temple Heritage Architecture", "Herbal Garden", "Traditional Brass Lamps", "Wi-Fi", "Air Conditioning", "Vegetarian Kerala Kitchen"]),
             images=json.dumps([
-                "/static/images/Illam.jpg"
+                "/static/images/Illam.jpg",
+                "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80"
             ]),
             featured_image="/static/images/Illam.jpg",
             approval_status="approved",
@@ -227,7 +235,9 @@ def seed_database():
             bathrooms=3,
             amenities=json.dumps(["Riverfront Deck", "Canoe Boat Ride", "Nadumuttom", "High-Speed Wi-Fi", "Yoga Pavilion", "Lush Lawn"]),
             images=json.dumps([
-                "/static/images/puzhakkal_nalukettu.jpg"
+                "/static/images/puzhakkal_nalukettu.jpg",
+                "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&w=1200&q=80"
             ]),
             featured_image="/static/images/puzhakkal_nalukettu.jpg",
             approval_status="approved",
@@ -252,7 +262,9 @@ def seed_database():
             bathrooms=2,
             amenities=json.dumps(["Waterfall Sound Views", "Solar Powered", "Forest Balcony", "Wi-Fi"]),
             images=json.dumps([
-                "/static/images/athirappilly_retreat.jpg"
+                "/static/images/athirappilly_retreat.jpg",
+                "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1200&q=80"
             ]),
             featured_image="/static/images/athirappilly_retreat.jpg",
             approval_status="pending",  # PENDING APPROVAL
@@ -260,7 +272,111 @@ def seed_database():
             featured=False
         )
         
-        db.session.add_all([prop1, prop2, prop3, prop4, prop5, prop_pending])
+        prop6 = Property(
+            owner_id=owner1.owner_id,
+            property_name="Vembanad Luxury Backwater Houseboat & Heritage Lodge",
+            slug="vembanad-luxury-backwater-houseboat-kochi",
+            property_type="Heritage Stay",
+            description="Authentic Kettuvallam wooden houseboat stay docked along the pristine backwaters of Kumbalangi Integrated Tourism Village. Features traditional coir and bamboo thatched roof, teakwood sundeck, air-conditioned luxury bedrooms, and private chef preparing fresh Karimeen fish fry.",
+            address="Kumbalangi Backwater Jetty, Kochi",
+            district="Ernakulam",
+            latitude=9.8732,
+            longitude=76.2891,
+            price_per_night=8500.0,
+            guest_capacity=4,
+            bedrooms=2,
+            bathrooms=2,
+            amenities=json.dumps(["Sunset Sundeck", "Private Onboard Chef", "Air Conditioning", "Canoe Exploration", "Wi-Fi", "Traditional Toddy & Sadhya Meals"]),
+            images=json.dumps([
+                "/static/images/houseboat.jpg",
+                "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=1200&q=80"
+            ]),
+            featured_image="/static/images/houseboat.jpg",
+            approval_status="approved",
+            availability_status="available",
+            featured=True
+        )
+
+        prop7 = Property(
+            owner_id=owner2.owner_id,
+            property_name="Shakthan Thampuran Royal Courtyard Manor",
+            slug="shakthan-thampuran-royal-courtyard-manor-thrissur",
+            property_type="Heritage Villa",
+            description="19th-century royal palace residency adjacent to the historic Shakthan Thampuran Palace in Thrissur. Preserves classical Dutch-Kerala architectural fusion, carved teak ceilings, sweeping red oxide verandas, and a private heritage courtyard.",
+            address="Palace Road, Chembukkavu, Thrissur",
+            district="Thrissur",
+            latitude=10.5315,
+            longitude=76.2210,
+            price_per_night=6400.0,
+            guest_capacity=6,
+            bedrooms=3,
+            bathrooms=3,
+            amenities=json.dumps(["Royal Heritage Courtyard", "Antique Rosewood Furniture", "Wi-Fi", "Air Conditioning", "Ayurvedic Massage Facility", "Free Parking"]),
+            images=json.dumps([
+                "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80"
+            ]),
+            featured_image="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80",
+            approval_status="approved",
+            availability_status="available",
+            featured=False
+        )
+
+        prop8 = Property(
+            owner_id=owner1.owner_id,
+            property_name="Chendamangalam Handloom Heritage Kovilakam",
+            slug="chendamangalam-handloom-heritage-kovilakam-paravur",
+            property_type="Traditional Kerala House",
+            description="Historic riverfront kovilakam situated in Chendamangalam, the ancient seat of the Paliath Achans. Overlooks the Periyar tributary, surrounded by weaving villages, traditional spice groves, and 18th-century architecture with copper roofing.",
+            address="Kovilakam Road, Chendamangalam, North Paravur",
+            district="Ernakulam",
+            latitude=10.1582,
+            longitude=76.2163,
+            price_per_night=4800.0,
+            guest_capacity=5,
+            bedrooms=2,
+            bathrooms=2,
+            amenities=json.dumps(["Nadumuttom Courtyard", "River Bathing Ghat", "Handloom Weaving Workshop Tour", "Wi-Fi", "Organic Kitchen Garden"]),
+            images=json.dumps([
+                "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80"
+            ]),
+            featured_image="https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80",
+            approval_status="approved",
+            availability_status="available",
+            featured=False
+        )
+
+        prop9 = Property(
+            owner_id=owner2.owner_id,
+            property_name="Guruvayur Temple Heritage Illam",
+            slug="guruvayur-temple-heritage-illam-thrissur",
+            property_type="Traditional Kerala House",
+            description="Serene traditional Illam located within gentle walking distance of the sacred Guruvayur Sri Krishna Temple. Intricate wood carvings, peaceful meditation verandah, private herbal garden, and sattvic Kerala traditional cuisine.",
+            address="East Nada, Guruvayur, Thrissur",
+            district="Thrissur",
+            latitude=10.5947,
+            longitude=76.0401,
+            price_per_night=3800.0,
+            guest_capacity=4,
+            bedrooms=2,
+            bathrooms=2,
+            amenities=json.dumps(["Temple Heritage Sitout", "Pure Vegetarian Kitchen", "Air Conditioning", "Wi-Fi", "Meditation Courtyard", "Covered Car Parking"]),
+            images=json.dumps([
+                "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&w=1200&q=80"
+            ]),
+            featured_image="https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=1200&q=80",
+            approval_status="approved",
+            availability_status="available",
+            featured=False
+        )
+        
+        db.session.add_all([prop1, prop2, prop3, prop4, prop5, prop_pending, prop6, prop7, prop8, prop9])
         db.session.flush()
         
         # 3. Seed Vehicles (Cars, Bikes, Scooters)
@@ -278,9 +394,11 @@ def seed_database():
             delivery_available=True,
             specifications=json.dumps({"transmission": "Manual 5-Speed", "fuel": "Petrol (BS6)", "seats": "2 Seater", "mileage": "36 kmpl"}),
             images=json.dumps([
-                "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=1200&q=80"
+                "https://images.unsplash.com/photo-1609630875171-b1321377ee65?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1558980664-769d59546b3d?auto=format&fit=crop&w=1200&q=80"
             ]),
-            featured_image="https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=1200&q=80",
+            featured_image="https://images.unsplash.com/photo-1609630875171-b1321377ee65?auto=format&fit=crop&w=1200&q=80",
             approval_status="approved",
             availability_status="available",
             featured=True
@@ -300,7 +418,9 @@ def seed_database():
             delivery_available=True,
             specifications=json.dumps({"transmission": "Automatic 6-Speed", "fuel": "Diesel Turbo", "seats": "4 Seater", "mileage": "14 kmpl"}),
             images=json.dumps([
-                "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=80"
+                "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80"
             ]),
             featured_image="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=80",
             approval_status="approved",
@@ -322,7 +442,9 @@ def seed_database():
             delivery_available=False,
             specifications=json.dumps({"transmission": "CVT Automatic", "fuel": "Petrol", "seats": "2 Seater", "mileage": "48 kmpl"}),
             images=json.dumps([
-                "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=1200&q=80"
+                "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1558981408-db0ecd8a1ee4?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1591637333184-19aa84b3e01f?auto=format&fit=crop&w=1200&q=80"
             ]),
             featured_image="https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=1200&q=80",
             approval_status="approved",
@@ -344,9 +466,11 @@ def seed_database():
             delivery_available=True,
             specifications=json.dumps({"transmission": "Manual 5-Speed", "fuel": "Diesel D-4D", "seats": "7 Seater", "mileage": "15 kmpl"}),
             images=json.dumps([
-                "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1200&q=80"
+                "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=1200&q=80"
             ]),
-            featured_image="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1200&q=80",
+            featured_image="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=1200&q=80",
             approval_status="approved",
             availability_status="available",
             featured=True
@@ -366,9 +490,11 @@ def seed_database():
             delivery_available=True,
             specifications=json.dumps({"transmission": "6-Speed Assist & Slipper", "fuel": "Petrol (Liquid Cooled)", "seats": "2 Seater", "mileage": "30 kmpl"}),
             images=json.dumps([
-                "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=1200&q=80"
+                "https://images.unsplash.com/photo-1615172282427-9a57ef2d142e?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1558980664-769d59546b3d?auto=format&fit=crop&w=1200&q=80"
             ]),
-            featured_image="https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=1200&q=80",
+            featured_image="https://images.unsplash.com/photo-1615172282427-9a57ef2d142e?auto=format&fit=crop&w=1200&q=80",
             approval_status="approved",
             availability_status="available",
             featured=False
@@ -389,15 +515,117 @@ def seed_database():
             delivery_available=True,
             specifications=json.dumps({"transmission": "Manual 5-Speed", "fuel": "Diesel CRDe", "seats": "4 Seater", "mileage": "12 kmpl"}),
             images=json.dumps([
-                "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=80"
+                "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80"
             ]),
-            featured_image="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=80",
+            featured_image="https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1200&q=80",
             approval_status="pending",  # PENDING APPROVAL
             availability_status="available",
             featured=False
         )
         
-        db.session.add_all([veh1, veh2, veh3, veh4, veh5, veh_pending])
+        veh6 = Vehicle(
+            owner_id=owner1.owner_id,
+            vehicle_name="Tata Harrier Dark Edition",
+            model="XZA Plus Kryotec Automatic (2024)",
+            vehicle_type="car",
+            description="Bold, premium midnight black SUV with panoramic sunroof, 360-degree camera, wireless charging, JBL 9-speaker sound system, and comfortable ventilated seats. Seamlessly travels Kerala national highways and hill passes.",
+            price_per_day=3500.0,
+            security_deposit=2000.0,
+            district="Ernakulam",
+            pickup_location="Cochin International Airport (COK) Terminal 1 Hub",
+            latitude=10.1518,
+            longitude=76.4019,
+            delivery_available=True,
+            specifications=json.dumps({"transmission": "Automatic 6-Speed", "fuel": "Diesel Turbo", "seats": "5 Seater", "mileage": "16 kmpl"}),
+            images=json.dumps([
+                "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=1200&q=80"
+            ]),
+            featured_image="https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&w=1200&q=80",
+            approval_status="approved",
+            availability_status="available",
+            featured=True
+        )
+
+        veh7 = Vehicle(
+            owner_id=owner1.owner_id,
+            vehicle_name="Honda Activa 6G Premium Edition",
+            model="Deluxe Smart Key (2024)",
+            vehicle_type="scooter",
+            description="Kerala's most dependable and fuel-efficient automatic scooter. Equipped with silent start, telescopic front suspension, smart remote key, and LED headlamp. The perfect economical ride for Kochi traffic and Fort Kochi lanes.",
+            price_per_day=450.0,
+            security_deposit=1500.0,
+            district="Ernakulam",
+            pickup_location="Edappally Lulu Mall Hub / Metro Station",
+            latitude=10.0261,
+            longitude=76.3125,
+            delivery_available=True,
+            specifications=json.dumps({"transmission": "CVT Automatic", "fuel": "Petrol (eSP)", "seats": "2 Seater", "mileage": "55 kmpl"}),
+            images=json.dumps([
+                "https://images.unsplash.com/photo-1591637333184-19aa84b3e01f?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1558981408-db0ecd8a1ee4?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=1200&q=80"
+            ]),
+            featured_image="https://images.unsplash.com/photo-1591637333184-19aa84b3e01f?auto=format&fit=crop&w=1200&q=80",
+            approval_status="approved",
+            availability_status="available",
+            featured=False
+        )
+
+        veh8 = Vehicle(
+            owner_id=owner2.owner_id,
+            vehicle_name="Jawa 42 Bobber Heritage Custom",
+            model="Jasper Red Dual Tone (2024)",
+            vehicle_type="bike",
+            description="Eye-catching modern classic motorcycle with single floating saddle, bar-end mirrors, dual exhausts, and a punchy 334cc liquid-cooled engine. Cruise through Thrissur cultural landmarks with unmatched head-turning style.",
+            price_per_day=1100.0,
+            security_deposit=2000.0,
+            district="Thrissur",
+            pickup_location="Thrissur Round South / Shakthan Stand",
+            latitude=10.5192,
+            longitude=76.2168,
+            delivery_available=True,
+            specifications=json.dumps({"transmission": "6-Speed Manual", "fuel": "Petrol (DOHC)", "seats": "Single Rider", "mileage": "32 kmpl"}),
+            images=json.dumps([
+                "https://images.unsplash.com/photo-1558981285-6f0c94958bb6?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1558980664-3a031cf67ea8?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1558980664-10e7170b5df9?auto=format&fit=crop&w=1200&q=80"
+            ]),
+            featured_image="https://images.unsplash.com/photo-1558981285-6f0c94958bb6?auto=format&fit=crop&w=1200&q=80",
+            approval_status="approved",
+            availability_status="available",
+            featured=False
+        )
+
+        veh9 = Vehicle(
+            owner_id=owner2.owner_id,
+            vehicle_name="Toyota Urban Cruiser Hyryder Hybrid",
+            model="Strong Hybrid V e-Drive (2024)",
+            vehicle_type="car",
+            description="Next-generation self-charging strong electric hybrid SUV. Whisper-quiet EV mode in city crawl, Heads-Up Display, 27.9 kmpl incredible mileage, and luxurious dual-tone leather interior. Ideal for eco-conscious Kerala road trips.",
+            price_per_day=2900.0,
+            security_deposit=2000.0,
+            district="Thrissur",
+            pickup_location="Puzhakkal Junction / Thrissur Highway Hub",
+            latitude=10.5480,
+            longitude=76.1920,
+            delivery_available=True,
+            specifications=json.dumps({"transmission": "e-CVT Automatic", "fuel": "Strong Electric-Hybrid", "seats": "5 Seater", "mileage": "28 kmpl"}),
+            images=json.dumps([
+                "https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1542362567-b07e54358753?auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=1200&q=80"
+            ]),
+            featured_image="https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=1200&q=80",
+            approval_status="approved",
+            availability_status="available",
+            featured=True
+        )
+
+        db.session.add_all([veh1, veh2, veh3, veh4, veh5, veh_pending, veh6, veh7, veh8, veh9])
         db.session.flush()
         
         # 4. Seed Bookings & Payments

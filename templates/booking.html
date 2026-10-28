@@ -56,6 +56,12 @@
             value="{{ item.price_per_night if listing_type == 'property' else item.price_per_day }}"
           >
 
+          <input
+            type="hidden"
+            id="listing_security_deposit"
+            value="{{ item.security_deposit if listing_type == 'vehicle' else 0 }}"
+          >
+
           {% if not current_user %}
             <div style="background: #fff8eb; border: 1px solid #ffd480; padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem; font-size: 0.9rem;">
               ⚠️ Please
@@ -443,17 +449,25 @@
 
             </div>
 
+            {% if listing_type == 'vehicle' %}
+            <div class="price-row" style="color: var(--ur-burnt-orange); font-weight: 500;">
+              <span>Refundable Caution Deposit</span>
+              <span id="display_security_deposit">
+                {{ format_currency(item.security_deposit or 2000.0) }}
+              </span>
+            </div>
+            {% endif %}
 
             <div class="price-row total">
 
               <span>Total Payable</span>
 
               <span id="display_total">
-                {{ format_currency(
-                  (item.price_per_night
-                  if listing_type == 'property'
-                  else item.price_per_day) * 1.17
-                ) }}
+                {% if listing_type == 'vehicle' %}
+                  {{ format_currency((item.price_per_day * 1.17) + (item.security_deposit or 2000.0)) }}
+                {% else %}
+                  {{ format_currency(item.price_per_night * 1.17) }}
+                {% endif %}
               </span>
 
             </div>

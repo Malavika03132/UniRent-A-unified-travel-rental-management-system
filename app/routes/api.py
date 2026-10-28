@@ -1,4 +1,5 @@
-from datetime import datetime
+import uuid
+from datetime import datetime, date
 from flask import Blueprint, request, jsonify, session
 
 from app.models import (
@@ -12,6 +13,7 @@ from app.models import (
     Review,
     Complaint
 )
+from app.utils.validators import validate_kyc
 
 api_bp = Blueprint('api', __name__)
 
@@ -31,7 +33,8 @@ def get_properties():
     )
 
     query = Property.query.filter_by(
-        approval_status='approved'
+        approval_status='approved',
+        availability_status='available'
     )
 
     if district:
@@ -94,7 +97,8 @@ def get_vehicles():
     v_type = request.args.get('type')
 
     query = Vehicle.query.filter_by(
-        approval_status='approved'
+        approval_status='approved',
+        availability_status='available'
     )
 
     if district:
@@ -238,6 +242,13 @@ def create_booking():
             '%Y-%m-%d'
         ).date()
 
+        today = date.today()
+        if start_date < today:
+            return jsonify({
+                'success': False,
+                'error': 'Check-in/pickup date cannot be in the past'
+            }), 400
+
         if end_date <= start_date:
 
             return jsonify({
@@ -289,6 +300,12 @@ def create_booking():
                 'error': 'Property not found'
             }), 404
 
+        if prop.approval_status != 'approved' or prop.availability_status != 'available':
+            return jsonify({
+                'success': False,
+                'error': 'This property is currently not available for booking.'
+            }), 400
+
         owner_id = prop.owner_id
 
         rate = float(
@@ -311,25 +328,29 @@ def create_booking():
                     'Please select an identity type.'
             }), 400
 
-        if identity_type not in [
-            'PAN Card',
-            'Passport',
-            'Voter ID'
-        ]:
-
+        doc_type_map = {
+            'PAN Card': 'pan_card',
+            'pan_card': 'pan_card',
+            'Passport': 'passport',
+            'passport': 'passport',
+            'Voter ID': 'voter_id',
+            'voter_id': 'voter_id'
+        }
+        mapped_type = doc_type_map.get(identity_type)
+        if not mapped_type:
             return jsonify({
                 'success': False,
-                'error':
-                    'Invalid identity type selected.'
+                'error': 'Invalid identity type selected. Must be PAN Card, Passport, or Voter ID.'
             }), 400
 
-        if not identity_number:
-
+        valid, err, cleaned_id_number = validate_kyc(mapped_type, identity_number)
+        if not valid:
             return jsonify({
                 'success': False,
-                'error':
-                    'Identity number is required for property booking.'
+                'error': err
             }), 400
+
+        identity_number = cleaned_id_number
 
     # =========================================================================
     # VEHICLE
@@ -348,6 +369,12 @@ def create_booking():
                 'success': False,
                 'error': 'Vehicle not found'
             }), 404
+
+        if veh.approval_status != 'approved' or veh.availability_status != 'available':
+            return jsonify({
+                'success': False,
+                'error': 'This vehicle is currently not available for booking.'
+            }), 400
 
         owner_id = veh.owner_id
 
@@ -372,6 +399,15 @@ def create_booking():
                 'error':
                     "Driver's license number is required for vehicle booking."
             }), 400
+
+        valid, err, cleaned_dl = validate_kyc('driving_license', driver_license_number)
+        if not valid:
+            return jsonify({
+                'success': False,
+                'error': f"Invalid Driver's License: {err}"
+            }), 400
+
+        driver_license_number = cleaned_dl
 
     # =========================================================================
     # INVALID LISTING TYPE
@@ -519,7 +555,7 @@ def create_booking():
 
     ref = (
         f"UR-{datetime.utcnow().year}-"
-        f"B{int(datetime.utcnow().timestamp()) % 100000:05d}"
+        f"B{uuid.uuid4().hex[:6].upper()}"
     )
 
     # =========================================================================

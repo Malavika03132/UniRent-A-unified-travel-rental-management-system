@@ -26,6 +26,7 @@
         <th>Dates</th>
         <th>Total Amount</th>
         <th>Status</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -54,10 +55,23 @@
               <span class="badge badge-rejected">{{ b.booking_status|capitalize }}</span>
             {% endif %}
           </td>
+          <td>
+            {% if b.booking_status in ['confirmed', 'active'] %}
+              <form action="{{ url_for('owner.complete_booking', booking_id=b.booking_id) }}" method="POST" style="margin:0;">
+                <button type="submit" class="btn btn-secondary btn-sm" style="font-size:0.75rem; padding:0.25rem 0.6rem;" onclick="return confirm('Mark this reservation as Completed / Checked Out?');">
+                  Mark Completed
+                </button>
+              </form>
+            {% elif b.booking_status == 'completed' %}
+              <span style="font-size:0.8rem; color:var(--ur-muted);">Completed ✓</span>
+            {% else %}
+              <span style="font-size:0.8rem; color:var(--ur-muted);">—</span>
+            {% endif %}
+          </td>
         </tr>
       {% else %}
         <tr>
-          <td colspan="7" style="text-align: center; padding: 3rem 1rem; color: var(--ur-muted);">
+          <td colspan="8" style="text-align: center; padding: 3rem 1rem; color: var(--ur-muted);">
             No guest bookings recorded yet.
           </td>
         </tr>

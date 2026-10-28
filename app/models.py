@@ -865,7 +865,29 @@ class Booking(db.Model):
         elif self.listing_type == 'vehicle' and self.vehicle:
             return self.vehicle.featured_image
 
-        return '/static/images/hero_kerala_stay.jpg'
+        return '/static/images/tharavadu.jpg'
+
+    def get_masked_identity_number(self):
+        if not self.identity_number:
+            return None
+        num = self.identity_number.strip()
+        if len(num) <= 4:
+            return num
+        prefix = num[:2]
+        suffix = num[-2:]
+        masked_len = max(4, len(num) - 4)
+        return f"{prefix}{'*' * masked_len}{suffix}"
+
+    def get_masked_driver_license(self):
+        if not self.driver_license_number:
+            return None
+        num = self.driver_license_number.strip()
+        if len(num) <= 4:
+            return num
+        prefix = num[:4]
+        suffix = num[-4:]
+        masked_len = max(4, len(num) - 8)
+        return f"{prefix}{'*' * masked_len}{suffix}"
 
     def to_dict(self):
         return {

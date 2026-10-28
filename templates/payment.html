@@ -751,9 +751,8 @@
             id="rzp_pay_submit_btn"
             class="btn btn-primary btn-block btn-lg"
           >
-            Pay {{ format_currency(booking.total_amount) }} Securely
+            Pay {{ format_currency(booking.total_amount) }} with Razorpay Test Mode
           </button>
-
 
           <!-- =================================================
                SUCCESS MESSAGE
@@ -782,6 +781,6 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <!-- UniRent booking/payment JavaScript -->
-<script src="{{ url_for('static', filename='js/booking.js') }}?v=5"></script>
+<script src="{{ url_for('static', filename='js/booking.js') }}?v=6"></script>
 
 {% endblock %}

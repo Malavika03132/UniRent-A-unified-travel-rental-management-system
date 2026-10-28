@@ -1,3 +1,4 @@
+import uuid
 from datetime import date
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from app.models import db, User, Booking, Property, Vehicle, Review, Complaint, Payment
@@ -70,6 +71,25 @@ def bookings():
     )
 
 
+@traveler_bp.route('/bookings/<int:booking_id>/cancel', methods=['POST'])
+@login_required('traveler')
+def cancel_booking(booking_id):
+    user_id = session.get('user_id')
+    booking = db.session.get(Booking, booking_id)
+    if not booking or booking.user_id != user_id:
+        flash('Booking record not found or not authorized.', 'danger')
+        return redirect(url_for('traveler.bookings'))
+
+    if booking.booking_status in ['cancelled', 'completed']:
+        flash(f"Booking {booking.booking_reference} is already {booking.booking_status}.", 'warning')
+        return redirect(url_for('traveler.bookings'))
+
+    booking.booking_status = 'cancelled'
+    db.session.commit()
+    flash(f"Booking {booking.booking_reference} has been cancelled. The reserved dates have been released.", 'success')
+    return redirect(url_for('traveler.bookings'))
+
+
 @traveler_bp.route('/reviews', methods=['GET', 'POST'])
 @login_required('traveler')
 def reviews():
@@ -108,10 +128,10 @@ def reviews():
         return redirect(url_for('traveler.reviews'))
         
     my_reviews = Review.query.filter_by(user_id=user_id).order_by(Review.created_at.desc()).all()
-    # Bookings eligible for review (completed bookings with no review yet)
+    # Bookings eligible for review (confirmed or completed bookings with no review yet)
     eligible_bookings = Booking.query.filter(
         Booking.user_id == user_id,
-        Booking.booking_status == 'completed',
+        Booking.booking_status.in_(['completed', 'confirmed']),
         ~Booking.booking_id.in_([r.booking_id for r in my_reviews])
     ).all()
     
@@ -137,7 +157,7 @@ def complaints():
             flash('Invalid booking selected.', 'danger')
             return redirect(url_for('traveler.complaints'))
             
-        ref = f"CMP-{date.today().year}-{Booking.query.count() + 101}"
+        ref = f"CMP-{date.today().year}-C{uuid.uuid4().hex[:6].upper()}"
         new_complaint = Complaint(
             complaint_reference=ref,
             booking_id=booking_id,

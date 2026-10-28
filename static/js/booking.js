@@ -9,18 +9,25 @@ document.addEventListener('DOMContentLoaded', () => {
    BOOKING PRICE CALCULATOR
    ========================================================= */
 function initBookingPriceCalculator() {
-    const startInput = document.getElementById('start_date');
-    const endInput = document.getElementById('end_date');
+    const startInput = document.getElementById('start_date') || document.getElementById('booking_start_date');
+    const endInput = document.getElementById('end_date') || document.getElementById('booking_end_date');
     const rateInput = document.getElementById('listing_daily_rate');
+    const depositInput = document.getElementById('listing_security_deposit');
 
-    const daysDisplay = document.getElementById('total_days');
-    const subtotalDisplay = document.getElementById('subtotal_amount');
-    const serviceFeeDisplay = document.getElementById('service_fee_amount');
-    const taxDisplay = document.getElementById('tax_amount');
-    const totalDisplay = document.getElementById('total_amount');
+    const daysDisplay = document.getElementById('total_days') || document.getElementById('display_days');
+    const subtotalDisplay = document.getElementById('subtotal_amount') || document.getElementById('display_subtotal');
+    const serviceFeeDisplay = document.getElementById('service_fee_amount') || document.getElementById('display_service_fee');
+    const taxDisplay = document.getElementById('tax_amount') || document.getElementById('display_tax');
+    const totalDisplay = document.getElementById('total_amount') || document.getElementById('display_total');
 
     if (!startInput || !endInput || !rateInput) {
         return;
+    }
+
+    // Set today as minimum selectable start date
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (!startInput.min) {
+        startInput.min = todayStr;
     }
 
     function formatCurrency(amount) {
@@ -34,6 +41,7 @@ function initBookingPriceCalculator() {
         const startValue = startInput.value;
         const endValue = endInput.value;
         const rate = parseFloat(rateInput.value) || 0;
+        const deposit = depositInput ? parseFloat(depositInput.value) || 0 : 0;
 
         if (!startValue || !endValue) {
             return;
@@ -54,7 +62,7 @@ function initBookingPriceCalculator() {
         const subtotal = rate * days;
         const serviceFee = subtotal * 0.05;
         const tax = subtotal * 0.12;
-        const total = subtotal + serviceFee + tax;
+        const total = subtotal + serviceFee + tax + deposit;
 
         if (daysDisplay) {
             daysDisplay.textContent = days;
@@ -77,7 +85,18 @@ function initBookingPriceCalculator() {
         }
     }
 
-    startInput.addEventListener('change', calculatePrice);
+    startInput.addEventListener('change', () => {
+        if (startInput.value) {
+            const startDate = new Date(startInput.value);
+            startDate.setDate(startDate.getDate() + 1);
+            const minEndDate = startDate.toISOString().split('T')[0];
+            endInput.min = minEndDate;
+            if (endInput.value && endInput.value <= startInput.value) {
+                endInput.value = minEndDate;
+            }
+        }
+        calculatePrice();
+    });
     endInput.addEventListener('change', calculatePrice);
 
     calculatePrice();
@@ -273,6 +292,15 @@ function initRazorpayPayment() {
                         'Razorpay payment failed:',
                         response.error
                     );
+
+                    fetch('/api/payment-failed', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            booking_reference: bookingReference,
+                            error_description: response.error.description || response.error.reason || 'Payment failed'
+                        })
+                    }).catch(console.error);
 
                     alert(
                         response.error.description ||

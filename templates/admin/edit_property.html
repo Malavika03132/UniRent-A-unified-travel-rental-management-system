@@ -1,0 +1,117 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Edit Property #{{ property.property_id }} — Admin Portal{% endblock %}
+{% block page_title %}Edit Property: {{ property.property_name }}{% endblock %}
+
+{% block dashboard_content %}
+
+<div style="max-width: 880px; margin: 0 auto;">
+  
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+    <a href="{{ url_for('admin.properties') }}" class="btn btn-outline btn-sm">← Back to All Properties</a>
+    <span class="badge {% if property.approval_status == 'approved' %}badge-approved{% elif property.approval_status == 'pending' %}badge-pending{% else %}badge-rejected{% endif %}">
+      Status: {{ property.approval_status|upper }}
+    </span>
+  </div>
+
+  <div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 2.2rem; box-shadow: var(--shadow-sm);">
+    
+    <form action="{{ url_for('admin.edit_property', property_id=property.property_id) }}" method="POST">
+      
+      <h4 style="margin-bottom: 1.2rem; border-bottom: 1px solid var(--ur-border); padding-bottom: 0.5rem; color: var(--ur-brown);">Basic Information & Governance</h4>
+
+      <div class="form-group">
+        <label for="p_name">Heritage Property Name</label>
+        <input type="text" id="p_name" name="property_name" class="form-control" value="{{ property.property_name }}" required>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem;">
+        <div class="form-group">
+          <label for="p_type">Architectural Category</label>
+          <select id="p_type" name="property_type" class="form-control" required>
+            <option value="Traditional Kerala House" {% if property.property_type == 'Traditional Kerala House' %}selected{% endif %}>Traditional Kerala House (Tharavadu)</option>
+            <option value="Heritage Villa" {% if property.property_type == 'Heritage Villa' %}selected{% endif %}>Heritage Villa & Colonial Manor</option>
+            <option value="Heritage Stay" {% if property.property_type == 'Heritage Stay' %}selected{% endif %}>Coastal / Riverfront Heritage Stay</option>
+            <option value="Nalukettu Residence" {% if property.property_type == 'Nalukettu Residence' %}selected{% endif %}>Authentic Nalukettu Residence</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="p_district">Kerala District</label>
+          <select id="p_district" name="district" class="form-control" required>
+            <option value="Ernakulam" {% if property.district == 'Ernakulam' %}selected{% endif %}>Ernakulam</option>
+            <option value="Thrissur" {% if property.district == 'Thrissur' %}selected{% endif %}>Thrissur</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="p_address">Street Address</label>
+        <input type="text" id="p_address" name="address" class="form-control" value="{{ property.address }}" required>
+      </div>
+
+      <div class="form-group">
+        <label for="p_desc">Heritage Description</label>
+        <textarea id="p_desc" name="description" rows="4" class="form-control" required>{{ property.description }}</textarea>
+      </div>
+
+      <h4 style="margin: 2rem 0 1.2rem; border-bottom: 1px solid var(--ur-border); padding-bottom: 0.5rem; color: var(--ur-brown);">Pricing & Capacity</h4>
+
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+        <div class="form-group">
+          <label for="p_price">Price / Night (₹)</label>
+          <input type="number" id="p_price" name="price_per_night" class="form-control" value="{{ property.price_per_night }}" min="500" step="50" required>
+        </div>
+        <div class="form-group">
+          <label for="p_guests">Guests</label>
+          <input type="number" id="p_guests" name="guest_capacity" class="form-control" value="{{ property.guest_capacity }}" min="1" max="50" required>
+        </div>
+        <div class="form-group">
+          <label for="p_bedrooms">Bedrooms</label>
+          <input type="number" id="p_bedrooms" name="bedrooms" class="form-control" value="{{ property.bedrooms }}" min="1" max="20" required>
+        </div>
+        <div class="form-group">
+          <label for="p_bathrooms">Bathrooms</label>
+          <input type="number" id="p_bathrooms" name="bathrooms" class="form-control" value="{{ property.bathrooms }}" min="1" max="20" required>
+        </div>
+      </div>
+
+      <h4 style="margin: 2rem 0 1.2rem; border-bottom: 1px solid var(--ur-border); padding-bottom: 0.5rem; color: var(--ur-brown);">Platform Moderation & Availability</h4>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem;">
+        <div class="form-group">
+          <label for="p_approval">Approval Status</label>
+          <select id="p_approval" name="approval_status" class="form-control">
+            <option value="approved" {% if property.approval_status == 'approved' %}selected{% endif %}>Approved (Live on public catalog)</option>
+            <option value="pending" {% if property.approval_status == 'pending' %}selected{% endif %}>Pending Verification</option>
+            <option value="rejected" {% if property.approval_status == 'rejected' %}selected{% endif %}>Rejected</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="p_avail">Availability Status</label>
+          <select id="p_avail" name="availability_status" class="form-control">
+            <option value="available" {% if property.availability_status == 'available' %}selected{% endif %}>Active / Available for booking</option>
+            <option value="inactive" {% if property.availability_status == 'inactive' %}selected{% endif %}>Inactive / Deactivated</option>
+            <option value="maintenance" {% if property.availability_status == 'maintenance' %}selected{% endif %}>Under Maintenance</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="p_image">Featured Image URL / Path</label>
+        <input type="text" id="p_image" name="featured_image" class="form-control" value="{{ property.featured_image }}">
+      </div>
+
+      <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+        <button type="submit" class="btn btn-primary">Save Admin Changes</button>
+        <a href="{{ url_for('admin.properties') }}" class="btn btn-secondary">Cancel</a>
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+{% endblock %}

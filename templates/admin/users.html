@@ -1,0 +1,65 @@
+
+{% extends "dashboard_base.html" %}
+
+{% block title %}All Registered Users — Admin Portal{% endblock %}
+{% block page_title %}All Registered Users{% endblock %}
+
+{% block dashboard_content %}
+
+<div style="background: var(--ur-white); border: 1px solid var(--ur-border); border-radius: var(--radius-md); padding: 1.5rem 2rem; margin-bottom: 2rem;">
+    <h3 style="font-size: 1.25rem; margin: 0 0 0.3rem;">
+        Registered Users ({{ users|length }})
+    </h3>
+    <p style="color: var(--ur-muted); font-size: 0.88rem; margin: 0;">
+        View registered Travelers and Owners, their contact information, roles, and registration dates.
+    </p>
+</div>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Full Name</th>
+                <th>Email Address</th>
+                <th>Phone</th>
+                <th>Role</th>
+                <th>Joined Date</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>
+                    <strong>{{ user.full_name }}</strong>
+                    <div style="font-size: 0.78rem; color: var(--ur-muted);">
+                        User ID: #{{ user.id }}
+                    </div>
+                </td>
+
+                <td>{{ user.email }}</td>
+
+                <td>{{ user.phone or 'Not provided' }}</td>
+
+                <td>
+                    <span class="badge {% if user.role == 'owner' %}badge-pending{% else %}badge-approved{% endif %}">
+                        {{ 'OWNER' if user.role == 'owner' else 'TRAVELER' }}
+                    </span>
+                </td>
+
+                <td>
+                    {{ user.created_at.strftime('%b %d, %Y') if user.created_at else 'N/A' }}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 2rem;">
+                    No registered users found.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

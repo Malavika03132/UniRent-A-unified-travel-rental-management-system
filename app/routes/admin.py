@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from app.models import db, User, Owner, Admin, Property, Vehicle, Booking, Payment, Review, Complaint
@@ -105,13 +106,154 @@ def approval_action():
         item.rejection_reason = None
         flash(f"Listing '{item.property_name if item_type == 'property' else item.vehicle_name}' has been APPROVED and is now live on UniRent!", 'success')
     elif action == 'reject':
+        if not reason:
+            flash('A rejection reason is required when rejecting a listing submission.', 'danger')
+            return redirect(url_for('admin.approvals'))
         item.approval_status = 'rejected'
-        item.rejection_reason = reason or 'Listing details did not meet UniRent heritage quality or safety standards.'
-        flash(f"Listing '{item.property_name if item_type == 'property' else item.vehicle_name}' was REJECTED. Reason has been noted.", 'warning')
+        item.rejection_reason = reason
+        flash(f"Listing '{item.property_name if item_type == 'property' else item.vehicle_name}' was REJECTED. Rejection reason has been recorded.", 'warning')
         
     db.session.commit()
     return redirect(url_for('admin.approvals'))
 
+
+# ============================================================================
+# ADMIN LISTING MANAGEMENT (EDIT & DEACTIVATE)
+# ============================================================================
+
+@admin_bp.route('/properties/<int:property_id>/edit', methods=['GET', 'POST'])
+@login_required('admin')
+def edit_property(property_id):
+    prop = db.session.get(Property, property_id)
+    if not prop:
+        flash('Property not found.', 'danger')
+        return redirect(url_for('admin.properties'))
+
+    if request.method == 'POST':
+        prop.property_name = request.form.get('property_name', prop.property_name).strip()
+        prop.property_type = request.form.get('property_type', prop.property_type).strip()
+        prop.description = request.form.get('description', prop.description).strip()
+        prop.address = request.form.get('address', prop.address).strip()
+        prop.district = request.form.get('district', prop.district).strip()
+        price = request.form.get('price_per_night', type=float)
+        if price is not None and price >= 0:
+            prop.price_per_night = price
+        guest_capacity = request.form.get('guest_capacity', type=int)
+        if guest_capacity is not None and guest_capacity > 0:
+            prop.guest_capacity = guest_capacity
+        bedrooms = request.form.get('bedrooms', type=int)
+        if bedrooms is not None and bedrooms >= 0:
+            prop.bedrooms = bedrooms
+        bathrooms = request.form.get('bathrooms', type=int)
+        if bathrooms is not None and bathrooms >= 0:
+            prop.bathrooms = bathrooms
+        img_url = request.form.get('featured_image', '').strip()
+        if img_url:
+            prop.featured_image = img_url
+            prop.images = json.dumps([img_url])
+        approval = request.form.get('approval_status')
+        if approval in ['approved', 'pending', 'rejected']:
+            prop.approval_status = approval
+        avail = request.form.get('availability_status')
+        if avail in ['available', 'inactive', 'maintenance']:
+            prop.availability_status = avail
+
+        db.session.commit()
+        flash(f"Property '{prop.property_name}' updated successfully by administrator.", 'success')
+        return redirect(url_for('admin.properties'))
+
+    return render_template('admin/edit_property.html', property=prop)
+
+
+@admin_bp.route('/properties/<int:property_id>/deactivate', methods=['POST'])
+@login_required('admin')
+def deactivate_property(property_id):
+    prop = db.session.get(Property, property_id)
+    if not prop:
+        flash('Property not found.', 'danger')
+        return redirect(url_for('admin.properties'))
+
+    # Prefer deactivation over permanent deletion when historical bookings or reviews exist
+    if prop.availability_status == 'available':
+        prop.availability_status = 'inactive'
+        flash(f"Property '{prop.property_name}' has been deactivated.", 'warning')
+    else:
+        prop.availability_status = 'available'
+        flash(f"Property '{prop.property_name}' has been reactivated.", 'success')
+
+    db.session.commit()
+    return redirect(url_for('admin.properties'))
+
+
+@admin_bp.route('/vehicles/<int:vehicle_id>/edit', methods=['GET', 'POST'])
+@login_required('admin')
+def edit_vehicle(vehicle_id):
+    veh = db.session.get(Vehicle, vehicle_id)
+    if not veh:
+        flash('Vehicle not found.', 'danger')
+        return redirect(url_for('admin.vehicles'))
+
+    if request.method == 'POST':
+        veh.vehicle_name = request.form.get('vehicle_name', veh.vehicle_name).strip()
+        veh.model = request.form.get('model', veh.model).strip()
+        veh.vehicle_type = request.form.get('vehicle_type', veh.vehicle_type).strip()
+        veh.description = request.form.get('description', veh.description).strip()
+        veh.pickup_location = request.form.get('pickup_location', veh.pickup_location).strip()
+        veh.district = request.form.get('district', veh.district).strip()
+        price = request.form.get('price_per_day', type=float)
+        if price is not None and price >= 0:
+            veh.price_per_day = price
+        sec_dep = request.form.get('security_deposit', type=float)
+        if sec_dep is not None and sec_dep >= 0:
+            veh.security_deposit = sec_dep
+        img_url = request.form.get('featured_image', '').strip()
+        if img_url:
+            veh.featured_image = img_url
+            veh.images = json.dumps([img_url])
+        approval = request.form.get('approval_status')
+        if approval in ['approved', 'pending', 'rejected']:
+            veh.approval_status = approval
+        avail = request.form.get('availability_status')
+        if avail in ['available', 'inactive', 'maintenance']:
+            veh.availability_status = avail
+
+        db.session.commit()
+        flash(f"Vehicle '{veh.vehicle_name}' updated successfully by administrator.", 'success')
+        return redirect(url_for('admin.vehicles'))
+
+    return render_template('admin/edit_vehicle.html', vehicle=veh)
+
+
+@admin_bp.route('/vehicles/<int:vehicle_id>/deactivate', methods=['POST'])
+@login_required('admin')
+def deactivate_vehicle(vehicle_id):
+    veh = db.session.get(Vehicle, vehicle_id)
+    if not veh:
+        flash('Vehicle not found.', 'danger')
+        return redirect(url_for('admin.vehicles'))
+
+    # Prefer deactivation over permanent deletion when historical bookings or reviews exist
+    if veh.availability_status == 'available':
+        veh.availability_status = 'inactive'
+        flash(f"Vehicle '{veh.vehicle_name}' has been deactivated.", 'warning')
+    else:
+        veh.availability_status = 'available'
+        flash(f"Vehicle '{veh.vehicle_name}' has been reactivated.", 'success')
+
+    db.session.commit()
+    return redirect(url_for('admin.vehicles'))
+
+@admin_bp.route('/users')
+@login_required('admin')
+def users():
+    users_list = User.query.filter(
+        User.role.in_(['traveler', 'owner'])
+    ).order_by(User.created_at.desc()).all()
+
+    return render_template(
+        'admin/users.html',
+        users=users_list
+    )
 
 @admin_bp.route('/travelers')
 @login_required('admin')

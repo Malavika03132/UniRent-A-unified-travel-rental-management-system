@@ -718,8 +718,8 @@ img {
    ========================================================================== */
 .details-hero-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  grid-template-rows: 200px 200px;
+  grid-template-columns: 2fr 1.2fr;
+  grid-template-rows: 210px 210px;
   gap: 0.8rem;
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -1371,4 +1371,9 @@ img {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Prevent the third gallery image from being cropped */
+.details-hero-grid img:nth-child(3) {
+    object-fit: contain;
 }
